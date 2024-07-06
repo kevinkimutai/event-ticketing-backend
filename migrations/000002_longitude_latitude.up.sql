@@ -1,0 +1,5 @@
+ALTER TABLE events 
+DROP COLUMN long_lat,
+ADD COLUMN longitude FLOAT NOT NULL,
+ADD COLUMN latitude FLOAT NOT NULL;
+

@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries:
+      - ./sqlc/queries/events.sql
+      - ./sqlc/queries/users.sql
+
+    schema: "./migrations"
+    gen:
+      go:
+        package: "queries"
+        out: "./internal/adapters/queries"
+        sql_package: "pgx/v5"
