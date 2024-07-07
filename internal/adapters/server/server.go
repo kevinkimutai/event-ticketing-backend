@@ -14,20 +14,28 @@ type eventHandlerPort interface {
 	CreateEvent(*fiber.Ctx) error
 }
 
+type categoryHandlerPort interface {
+	CreateCategory(*fiber.Ctx) error
+}
+
 type ServerAdapter struct {
-	port  string
-	auth  authHandlerPort
-	event eventHandlerPort
+	port     string
+	auth     authHandlerPort
+	event    eventHandlerPort
+	category categoryHandlerPort
 }
 
 func New(
 	port string,
 	auth authHandlerPort,
-	event eventHandlerPort) *ServerAdapter {
+	event eventHandlerPort,
+	category categoryHandlerPort,
+) *ServerAdapter {
 	return &ServerAdapter{
-		port:  port,
-		auth:  auth,
-		event: event,
+		port:     port,
+		auth:     auth,
+		event:    event,
+		category: category,
 	}
 }
 
@@ -44,6 +52,7 @@ func (s *ServerAdapter) StartServer() {
 
 	// Define routes
 	app.Route("/api/v1/event", s.EventRouter)
+	app.Route("/api/v1/category", s.CategoryRouter)
 
 	app.Listen(":" + s.port)
 

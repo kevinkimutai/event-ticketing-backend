@@ -48,9 +48,11 @@ func main() {
 
 	//Repositories
 	eventRepo := application.NewEventRepo(dbAdapter)
+	categoriesRepo := application.NewCategoriesRepo(dbAdapter)
 
 	//Services
 	eventService := handler.NewEventService(eventRepo)
+	categoryService := handler.NewCategoryService(categoriesRepo)
 
 	authService, err := auth.New(dbAdapter)
 	if err != nil {
@@ -62,6 +64,7 @@ func main() {
 		APP_PORT,
 		authService,
 		eventService,
+		categoryService,
 	)
 
 	server.StartServer()

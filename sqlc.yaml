@@ -4,6 +4,7 @@ sql:
     queries:
       - ./sqlc/queries/events.sql
       - ./sqlc/queries/users.sql
+      - ./sqlc/queries/categories.sql
 
     schema: "./migrations"
     gen:
