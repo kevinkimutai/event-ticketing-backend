@@ -5,7 +5,7 @@ import (
 )
 
 type EventRepoPort interface {
-	CreateEvent(*domain.Event) (domain.Event, error)
+	CreateEvent(event *domain.Event, userID int64) (domain.Event, error)
 }
 
 type EventRepo struct {
@@ -18,8 +18,8 @@ func NewEventRepo(db EventRepoPort) *EventRepo {
 	}
 }
 
-func (r *EventRepo) CreateEvent(event *domain.Event) (domain.Event, error) {
-	e, err := r.db.CreateEvent(event)
+func (r *EventRepo) CreateEvent(event *domain.Event, userID int64) (domain.Event, error) {
+	e, err := r.db.CreateEvent(event, userID)
 
 	return e, err
 }

@@ -62,10 +62,11 @@ type Ticket struct {
 }
 
 type TicketOrder struct {
-	OrderID   int64
-	UserID    int64
-	PaymentID int64
-	CreatedAt pgtype.Timestamptz
+	OrderID     int64
+	PaymentID   int64
+	CreatedAt   pgtype.Timestamptz
+	AttendeeID  pgtype.Int8
+	TotalAmount pgtype.Float8
 }
 
 type TicketOrderItem struct {

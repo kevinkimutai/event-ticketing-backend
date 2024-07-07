@@ -5,6 +5,8 @@ sql:
       - ./sqlc/queries/events.sql
       - ./sqlc/queries/users.sql
       - ./sqlc/queries/categories.sql
+      - ./sqlc/queries/ticket_types.sql
+      - ./sqlc/queries/organisers.sql
 
     schema: "./migrations"
     gen:

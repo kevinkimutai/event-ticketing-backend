@@ -49,10 +49,12 @@ func main() {
 	//Repositories
 	eventRepo := application.NewEventRepo(dbAdapter)
 	categoriesRepo := application.NewCategoriesRepo(dbAdapter)
+	ticketTypeRepo := application.NewTicketTypeRepo(dbAdapter)
 
 	//Services
 	eventService := handler.NewEventService(eventRepo)
 	categoryService := handler.NewCategoryService(categoriesRepo)
+	ticketTypeService := handler.NewTicketTypeService(ticketTypeRepo)
 
 	authService, err := auth.New(dbAdapter)
 	if err != nil {
@@ -65,6 +67,7 @@ func main() {
 		authService,
 		eventService,
 		categoryService,
+		ticketTypeService,
 	)
 
 	server.StartServer()

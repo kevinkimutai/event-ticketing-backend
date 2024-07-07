@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/kevinkimutai/ticketingapp/internal/adapters/queries"
 	"github.com/kevinkimutai/ticketingapp/internal/app/domain"
 )
 
 type EventApiPort interface {
-	CreateEvent(event *domain.Event) (domain.Event, error)
+	CreateEvent(event *domain.Event, userID int64) (domain.Event, error)
 }
 
 type EventService struct {
@@ -20,6 +23,16 @@ func NewEventService(api EventApiPort) *EventService {
 }
 
 func (s *EventService) CreateEvent(c *fiber.Ctx) error {
+
+	//Get UserID from locals
+	cus := c.Locals("customer")
+
+	user, ok := cus.(queries.User)
+	if !ok {
+		fmt.Println("Type assertion failed, cus is not of type queries.User")
+
+	}
+
 	event := &domain.Event{}
 
 	//Bind To struct
@@ -42,7 +55,7 @@ func (s *EventService) CreateEvent(c *fiber.Ctx) error {
 	}
 
 	//API
-	newEvent, err := s.api.CreateEvent(event)
+	newEvent, err := s.api.CreateEvent(event, user.UserID)
 	if err != nil {
 		return c.Status(500).JSON(
 			domain.ErrorResponse{

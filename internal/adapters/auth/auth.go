@@ -169,7 +169,7 @@ func (a *Authenticator) IsAuthenticated(c *fiber.Ctx) error {
 		c.Locals("customer", user)
 	}
 
-	//Store In Locals
+	//Store authValues In Locals
 	c.Locals("user", profile)
 
 	// Next Middleware/Route
