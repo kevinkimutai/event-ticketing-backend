@@ -17,8 +17,7 @@ type Admin struct {
 type Attendee struct {
 	AttendeeID int64
 	UserID     int64
-	EventID    int64
-	OrderID    int64
+	OrderID    pgtype.Int8
 	CreatedAt  pgtype.Timestamptz
 }
 
@@ -39,6 +38,7 @@ type Event struct {
 	CreatedAt   pgtype.Timestamptz
 	Longitude   float64
 	Latitude    float64
+	PosterUrl   string
 }
 
 type Organiser struct {
@@ -57,16 +57,15 @@ type Payment struct {
 
 type Ticket struct {
 	TicketID     int64
-	EventID      int64
 	TicketTypeID int64
 }
 
 type TicketOrder struct {
 	OrderID     int64
-	PaymentID   int64
+	PaymentID   pgtype.Int8
 	CreatedAt   pgtype.Timestamptz
 	AttendeeID  pgtype.Int8
-	TotalAmount pgtype.Float8
+	TotalAmount pgtype.Numeric
 }
 
 type TicketOrderItem struct {
@@ -78,10 +77,12 @@ type TicketOrderItem struct {
 }
 
 type TicketType struct {
-	TicketTypeID int64
-	Name         pgtype.Text
-	Price        pgtype.Numeric
-	TotalTickets int32
+	TicketTypeID     int64
+	Name             pgtype.Text
+	Price            pgtype.Numeric
+	TotalTickets     int32
+	RemainingTickets int32
+	EventID          int64
 }
 
 type User struct {

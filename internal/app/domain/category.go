@@ -1,8 +1,8 @@
 package domain
 
 type Category struct {
-	CategoryID int64
-	Name       string
+	CategoryID int64  `json:"category_id"`
+	Name       string `json:"name"`
 }
 
 type CategoryResponse struct {

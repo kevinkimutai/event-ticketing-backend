@@ -19,9 +19,9 @@ SELECT COUNT(*) FROM events;
 
 -- name: CreateEvent :one
 INSERT INTO events (
-  name,category_id,date,from_time,to_time,location,description,longitude,latitude
+  name,category_id,date,from_time,to_time,location,description,longitude,latitude,poster_url
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9
+  $1, $2, $3, $4, $5, $6, $7, $8, $9 ,$10
 )
 RETURNING *;
 
@@ -34,7 +34,8 @@ UPDATE events
   location = $6,
   description = $7,
   longitude = $8,
-  latitude = $9
+  latitude = $9,
+  poster_url =$10
 WHERE event_id = $1;
 
 -- name: DeleteCompany :exec

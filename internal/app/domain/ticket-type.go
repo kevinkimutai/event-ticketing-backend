@@ -3,10 +3,12 @@ package domain
 import "errors"
 
 type TicketType struct {
-	TicketTypeID int64
-	Name         string
-	Price        float64
-	TotalTickets int32
+	EventID          int64   `json:"event_id"`
+	TicketTypeID     int64   `json:"ticket_type_id"`
+	Name             string  `json:"name"`
+	Price            float64 `json:"price"`
+	TotalTickets     int32   `json:"total_tickets"`
+	RemainingTickets int32   `json:"remaining_tickets"`
 }
 
 type TicketTypeResponse struct {
@@ -25,6 +27,9 @@ func NewTicketTypeDomain(t *TicketType) error {
 	}
 	if t.TotalTickets == 0 {
 		return errors.New("missing totaltickets field")
+	}
+	if t.RemainingTickets == 0 {
+		t.RemainingTickets = t.TotalTickets
 	}
 
 	return nil

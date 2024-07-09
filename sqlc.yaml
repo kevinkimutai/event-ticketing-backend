@@ -7,6 +7,10 @@ sql:
       - ./sqlc/queries/categories.sql
       - ./sqlc/queries/ticket_types.sql
       - ./sqlc/queries/organisers.sql
+      - ./sqlc/queries/attendees.sql
+      - ./sqlc/queries/ticket-order.sql
+      - ./sqlc/queries/ticket.sql
+      - ./sqlc/queries/ticket_order_item.sql
 
     schema: "./migrations"
     gen:

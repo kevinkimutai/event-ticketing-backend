@@ -13,11 +13,11 @@ import (
 
 const createEvent = `-- name: CreateEvent :one
 INSERT INTO events (
-  name,category_id,date,from_time,to_time,location,description,longitude,latitude
+  name,category_id,date,from_time,to_time,location,description,longitude,latitude,poster_url
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9
+  $1, $2, $3, $4, $5, $6, $7, $8, $9 ,$10
 )
-RETURNING event_id, name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude
+RETURNING event_id, name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude, poster_url
 `
 
 type CreateEventParams struct {
@@ -30,6 +30,7 @@ type CreateEventParams struct {
 	Description pgtype.Text
 	Longitude   float64
 	Latitude    float64
+	PosterUrl   string
 }
 
 func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error) {
@@ -43,6 +44,7 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event
 		arg.Description,
 		arg.Longitude,
 		arg.Latitude,
+		arg.PosterUrl,
 	)
 	var i Event
 	err := row.Scan(
@@ -57,6 +59,7 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event
 		&i.CreatedAt,
 		&i.Longitude,
 		&i.Latitude,
+		&i.PosterUrl,
 	)
 	return i, err
 }
@@ -72,7 +75,7 @@ func (q *Queries) DeleteCompany(ctx context.Context, eventID int64) error {
 }
 
 const getEvent = `-- name: GetEvent :one
-SELECT event_id, name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude FROM events
+SELECT event_id, name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude, poster_url FROM events
 WHERE event_id = $1 LIMIT 1
 `
 
@@ -91,6 +94,7 @@ func (q *Queries) GetEvent(ctx context.Context, eventID int64) (Event, error) {
 		&i.CreatedAt,
 		&i.Longitude,
 		&i.Latitude,
+		&i.PosterUrl,
 	)
 	return i, err
 }
@@ -107,7 +111,7 @@ func (q *Queries) GetTotalEventsCount(ctx context.Context) (int64, error) {
 }
 
 const listEvents = `-- name: ListEvents :many
-SELECT event_id, name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude FROM events
+SELECT event_id, name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude, poster_url FROM events
 ORDER BY name
 LIMIT $1 OFFSET $2
 `
@@ -138,6 +142,7 @@ func (q *Queries) ListEvents(ctx context.Context, arg ListEventsParams) ([]Event
 			&i.CreatedAt,
 			&i.Longitude,
 			&i.Latitude,
+			&i.PosterUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -150,7 +155,7 @@ func (q *Queries) ListEvents(ctx context.Context, arg ListEventsParams) ([]Event
 }
 
 const listUpcomingEvents = `-- name: ListUpcomingEvents :many
-SELECT event_id, name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude 
+SELECT event_id, name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude, poster_url 
 FROM events
 WHERE date > NOW() OR (date = NOW()::DATE AND to_time > NOW())
 LIMIT $1 OFFSET $2
@@ -182,6 +187,7 @@ func (q *Queries) ListUpcomingEvents(ctx context.Context, arg ListUpcomingEvents
 			&i.CreatedAt,
 			&i.Longitude,
 			&i.Latitude,
+			&i.PosterUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -202,7 +208,8 @@ UPDATE events
   location = $6,
   description = $7,
   longitude = $8,
-  latitude = $9
+  latitude = $9,
+  poster_url =$10
 WHERE event_id = $1
 `
 
@@ -216,6 +223,7 @@ type UpdateEventParams struct {
 	Description pgtype.Text
 	Longitude   float64
 	Latitude    float64
+	PosterUrl   string
 }
 
 func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) error {
@@ -229,6 +237,7 @@ func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) error 
 		arg.Description,
 		arg.Longitude,
 		arg.Latitude,
+		arg.PosterUrl,
 	)
 	return err
 }

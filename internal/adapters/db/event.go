@@ -32,6 +32,7 @@ func (db *DBAdapter) CreateEvent(event *domain.Event, userID int64) (domain.Even
 		Description: utils.ConvertStringToText(event.Description),
 		Longitude:   event.Longitude,
 		Latitude:    event.Latitude,
+		PosterUrl:   event.PosterUrl,
 	})
 	if err != nil {
 		tx.Rollback(ctx)
@@ -64,5 +65,6 @@ func (db *DBAdapter) CreateEvent(event *domain.Event, userID int64) (domain.Even
 		Description: e.Description.String,
 		Longitude:   e.Longitude,
 		Latitude:    e.Latitude,
+		PosterUrl:   e.PosterUrl,
 	}, err
 }

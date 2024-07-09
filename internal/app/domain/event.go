@@ -17,6 +17,7 @@ type Event struct {
 	Longitude   float64   `json:"longitude"`
 	Latitude    float64   `json:"latitude"`
 	CreatedAt   time.Time `json:"created_at"`
+	PosterUrl   string    `json:"poster_url"`
 }
 
 type EventsFetch struct {
@@ -75,6 +76,9 @@ func NewEventDomain(e *Event) error {
 	}
 	if e.Latitude == 0 {
 		return errors.New("missing totime field")
+	}
+	if e.PosterUrl == "" {
+		return errors.New("missing poster")
 	}
 
 	return nil
