@@ -67,7 +67,7 @@ func (db *DBAdapter) CreateEvent(event *domain.Event, userID int64) (domain.Even
 		Longitude:   e.Longitude,
 		Latitude:    e.Latitude,
 		PosterUrl:   e.PosterUrl,
-	}, err
+	}, nil
 }
 
 func (db *DBAdapter) GetEvents(params domain.Params) (domain.EventsFetch, error) {
@@ -127,4 +127,27 @@ func (db *DBAdapter) GetEvents(params domain.Params) (domain.EventsFetch, error)
 
 func getPage(offset, limit int32) uint {
 	return uint((offset / limit) + 1)
+}
+
+func (db *DBAdapter) GetEventByID(eventID int64) (domain.Event, error) {
+	ctx := context.Background()
+
+	e, err := db.queries.GetEvent(ctx, eventID)
+	if err != nil {
+		return domain.Event{}, err
+	}
+
+	return domain.Event{
+		EventID:     e.EventID,
+		Name:        e.Name,
+		CategoryID:  e.CategoryID,
+		Date:        e.Date.Time,
+		FromTime:    e.FromTime.Time,
+		ToTime:      e.ToTime.Time,
+		Location:    e.Location,
+		Description: e.Description.String,
+		Longitude:   e.Longitude,
+		Latitude:    e.Latitude,
+		PosterUrl:   e.PosterUrl,
+	}, nil
 }

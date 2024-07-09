@@ -88,7 +88,5 @@ func StringToInt32(s string) int32 {
 	}
 	// Convert the int64 to int32
 
-	fmt.Println("PCONVERT")
-	fmt.Println(int32(i64))
 	return int32(i64)
 }

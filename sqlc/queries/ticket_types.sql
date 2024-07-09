@@ -11,6 +11,9 @@ RETURNING *;
 SELECT * FROM ticket_types
 WHERE ticket_type_id = $1 LIMIT 1;
 
+-- name: GetEventTicketTypes :many
+SELECT * FROM ticket_types
+WHERE event_id = $1;
 
 
 -- name: UpdateRemainingTicketType :exec

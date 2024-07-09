@@ -13,6 +13,7 @@ type authHandlerPort interface {
 type eventHandlerPort interface {
 	CreateEvent(*fiber.Ctx) error
 	GetEvents(*fiber.Ctx) error
+	GetEvent(*fiber.Ctx) error
 }
 
 type categoryHandlerPort interface {

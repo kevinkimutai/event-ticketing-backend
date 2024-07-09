@@ -4,6 +4,8 @@ import (
 	"errors"
 	"strconv"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Event struct {
@@ -19,6 +21,25 @@ type Event struct {
 	Latitude    float64   `json:"latitude"`
 	CreatedAt   time.Time `json:"created_at"`
 	PosterUrl   string    `json:"poster_url"`
+}
+
+type GetEventRow struct {
+	EventID          int64              `json:"event_id"`
+	EventName        string             `json:"event_name"`
+	CategoryName     string             `json:"category_name"`
+	Date             pgtype.Timestamptz `json:"date"`
+	FromTime         pgtype.Timestamptz `json:"from_time"`
+	ToTime           pgtype.Timestamptz `json:"to_time"`
+	Location         string             `json:"location"`
+	Description      pgtype.Text        `json:"description"`
+	Longitude        float64            `json:"longitude"`
+	Latitude         float64            `json:"latitude"`
+	PosterUrl        string             `json:"poster_url"`
+	TicketTypeID     int64              `json:"ticket_type_id"`
+	TicketTypeName   pgtype.Text        `json:"ticket_type_name"`
+	Price            pgtype.Numeric     `json:"price"`
+	TotalTickets     int32              `json:"total_tickets"`
+	RemainingTickets int32              `json:"remaining_tickets"`
 }
 
 type EventsFetch struct {

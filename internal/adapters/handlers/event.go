@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/kevinkimutai/ticketingapp/internal/adapters/queries"
@@ -11,6 +12,7 @@ import (
 type EventApiPort interface {
 	CreateEvent(event *domain.Event, userID int64) (domain.Event, error)
 	GetEvents(domain.Params) (domain.EventsFetch, error)
+	GetEventByID(int64) (domain.Event, error)
 }
 
 type EventService struct {
@@ -102,4 +104,34 @@ func (s *EventService) GetEvents(c *fiber.Ctx) error {
 			Total:         data.Total,
 			Data:          data.Data,
 		})
+}
+
+func (s *EventService) GetEvent(c *fiber.Ctx) error {
+	eventID := c.Params("eventID")
+
+	//convert To int64
+	eventIDInt64, err := strconv.ParseInt(eventID, 10, 32)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+	}
+
+	//Get Product API
+	event, err := s.api.GetEventByID(eventIDInt64)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+	}
+
+	return c.Status(200).JSON(domain.EventResponse{
+		StatusCode: 200,
+		Message:    "success",
+		Data:       event,
+	})
 }
