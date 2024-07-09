@@ -10,6 +10,7 @@ import (
 
 type EventApiPort interface {
 	CreateEvent(event *domain.Event, userID int64) (domain.Event, error)
+	GetEvents(domain.Params) (domain.EventsFetch, error)
 }
 
 type EventService struct {
@@ -73,4 +74,32 @@ func (s *EventService) CreateEvent(c *fiber.Ctx) error {
 			Data:       newEvent,
 		})
 
+}
+
+func (s *EventService) GetEvents(c *fiber.Ctx) error {
+	//Get Query Params
+	m := c.Queries()
+
+	//Bind To ProductParams
+	params := domain.CheckEventParams(m)
+
+	//Get All Products API
+	data, err := s.api.GetEvents(params)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+
+	}
+	return c.Status(200).JSON(
+		domain.EventsResponse{
+			StatusCode:    200,
+			Message:       "Successfully retrieved products",
+			Page:          data.Page,
+			NumberOfPages: data.NumberOfPages,
+			Total:         data.Total,
+			Data:          data.Data,
+		})
 }

@@ -79,3 +79,16 @@ func ConvertFloat64ToInt8(f int64) pgtype.Int8 {
 	fmt.Println(int8Pgtype)
 	return int8Pgtype
 }
+
+func StringToInt32(s string) int32 {
+	// Parse the string to an int64 first
+	i64, err := strconv.ParseInt(s, 10, 32)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Convert the int64 to int32
+
+	fmt.Println("PCONVERT")
+	fmt.Println(int32(i64))
+	return int32(i64)
+}

@@ -21,11 +21,11 @@ type TicketOrder struct {
 }
 
 type TicketOrderItem struct {
-	ItemID       int64
-	OrderID      int64
-	TicketTypeID int64
-	Quantity     int64
-	TotalPrice   float64
+	ItemID       int64   `json:"item_id"`
+	OrderID      int64   `json:"order_id"`
+	TicketTypeID int64   `json:"ticket_type_id"`
+	Quantity     int64   `json:"quantity"`
+	TotalPrice   float64 `json:"total_price"`
 }
 
 type OrderItem struct {

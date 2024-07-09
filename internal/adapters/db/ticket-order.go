@@ -28,18 +28,19 @@ func (db *DBAdapter) CreateTicketOrder(t *domain.TicketOrderRequest, userID int6
 	attendee, err := qtx.CreateAttendee(ctx, userID)
 	if err != nil {
 		tx.Rollback(ctx)
+		fmt.Println("error occured 1")
 		return domain.TicketOrder{}, err
 	}
 
 	var pgtype8 pgtype.Int8
 	pgtype8.Scan(attendee.AttendeeID)
 
-	fmt.Println(pgtype8)
-
 	//Create Ticket Order
 	ticketOrder, err := qtx.CreateTicketOrder(ctx, pgtype8)
 	if err != nil {
 		tx.Rollback(ctx)
+		fmt.Println("error occured 2")
+
 		return domain.TicketOrder{}, err
 	}
 
@@ -51,6 +52,7 @@ func (db *DBAdapter) CreateTicketOrder(t *domain.TicketOrderRequest, userID int6
 		ttype, err := qtx.GetTicketType(ctx, v.TicketTypeID)
 		if err != nil {
 			tx.Rollback(ctx)
+			fmt.Println(v.TicketTypeID)
 			return domain.TicketOrder{}, err
 		}
 
@@ -76,6 +78,7 @@ func (db *DBAdapter) CreateTicketOrder(t *domain.TicketOrderRequest, userID int6
 		})
 		if err != nil {
 			tx.Rollback(ctx)
+			fmt.Println("error occured 4")
 			return domain.TicketOrder{}, err
 		}
 	}
@@ -87,6 +90,7 @@ func (db *DBAdapter) CreateTicketOrder(t *domain.TicketOrderRequest, userID int6
 		ticket, err := qtx.CreateTicket(ctx, v.TicketTypeID)
 		if err != nil {
 			tx.Rollback(ctx)
+			fmt.Println("error occured 5")
 			return domain.TicketOrder{}, err
 		}
 
@@ -119,6 +123,7 @@ func (db *DBAdapter) CreateTicketOrder(t *domain.TicketOrderRequest, userID int6
 
 	if err != nil {
 		tx.Rollback(ctx)
+		fmt.Println("error occured 6")
 		return domain.TicketOrder{}, err
 	}
 

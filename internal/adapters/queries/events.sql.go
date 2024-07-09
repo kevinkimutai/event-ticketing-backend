@@ -101,6 +101,7 @@ func (q *Queries) GetEvent(ctx context.Context, eventID int64) (Event, error) {
 
 const getTotalEventsCount = `-- name: GetTotalEventsCount :one
 SELECT COUNT(*) FROM events
+  WHERE date > NOW() OR (date = NOW()::DATE AND to_time > NOW())
 `
 
 func (q *Queries) GetTotalEventsCount(ctx context.Context) (int64, error) {
@@ -158,16 +159,18 @@ const listUpcomingEvents = `-- name: ListUpcomingEvents :many
 SELECT event_id, name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude, poster_url 
 FROM events
 WHERE date > NOW() OR (date = NOW()::DATE AND to_time > NOW())
+ AND (category_id = $3 OR $3 IS NULL)
 LIMIT $1 OFFSET $2
 `
 
 type ListUpcomingEventsParams struct {
-	Limit  int32
-	Offset int32
+	Limit      int32
+	Offset     int32
+	CategoryID int64
 }
 
 func (q *Queries) ListUpcomingEvents(ctx context.Context, arg ListUpcomingEventsParams) ([]Event, error) {
-	rows, err := q.db.Query(ctx, listUpcomingEvents, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listUpcomingEvents, arg.Limit, arg.Offset, arg.CategoryID)
 	if err != nil {
 		return nil, err
 	}

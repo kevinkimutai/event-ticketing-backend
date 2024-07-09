@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"strconv"
 	"time"
 )
 
@@ -47,6 +48,12 @@ type ErrorResponse struct {
 	Message    string `json:"message"`
 }
 
+type Params struct {
+	Page     int32
+	Limit    int32
+	Category string
+}
+
 //Check Missing Data
 
 func NewEventDomain(e *Event) error {
@@ -82,4 +89,31 @@ func NewEventDomain(e *Event) error {
 	}
 
 	return nil
+}
+
+func CheckEventParams(m map[string]string) Params {
+	var LIMIT, OFFSET int32 = 10, 0
+
+	if m["limit"] != "" {
+		items, _ := strconv.Atoi(m["limit"])
+
+		LIMIT = int32(items)
+
+	}
+	if m["page"] != "" {
+		page, _ := strconv.Atoi(m["page"])
+
+		if page < 1 {
+			page = 1
+		}
+
+		OFFSET = (int32(page) - 1) * LIMIT
+
+	}
+
+	return Params{
+		Page:     OFFSET,
+		Limit:    LIMIT,
+		Category: m["category"],
+	}
 }

@@ -11,11 +11,13 @@ LIMIT $1 OFFSET $2;
 SELECT * 
 FROM events
 WHERE date > NOW() OR (date = NOW()::DATE AND to_time > NOW())
+ AND (category_id = $3 OR $3 IS NULL)
 LIMIT $1 OFFSET $2;
 
 
 -- name: GetTotalEventsCount :one
-SELECT COUNT(*) FROM events;
+SELECT COUNT(*) FROM events
+  WHERE date > NOW() OR (date = NOW()::DATE AND to_time > NOW());
 
 -- name: CreateEvent :one
 INSERT INTO events (

@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"math"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/kevinkimutai/ticketingapp/internal/adapters/queries"
@@ -67,4 +68,63 @@ func (db *DBAdapter) CreateEvent(event *domain.Event, userID int64) (domain.Even
 		Latitude:    e.Latitude,
 		PosterUrl:   e.PosterUrl,
 	}, err
+}
+
+func (db *DBAdapter) GetEvents(params domain.Params) (domain.EventsFetch, error) {
+	ctx := context.Background()
+
+	//Get Products
+	events, err := db.queries.ListUpcomingEvents(ctx, queries.ListUpcomingEventsParams{
+		Limit:  params.Limit,
+		Offset: params.Page,
+	})
+	if err != nil {
+		return domain.EventsFetch{}, err
+
+	}
+
+	//Get Count
+	count, err := db.queries.GetTotalEventsCount(ctx)
+	if err != nil {
+		return domain.EventsFetch{}, err
+
+	}
+
+	//Get Page
+	page := getPage(params.Page, params.Limit)
+
+	//map struct
+	var evs []domain.Event
+
+	for _, item := range events {
+
+		event := domain.Event{
+			EventID:     item.EventID,
+			Name:        item.Name,
+			CategoryID:  item.CategoryID,
+			Description: item.Description.String,
+			PosterUrl:   item.PosterUrl,
+			Location:    item.Location,
+			Longitude:   item.Longitude,
+			Latitude:    item.Latitude,
+			Date:        item.Date.Time,
+			FromTime:    item.FromTime.Time,
+			ToTime:      item.ToTime.Time,
+			CreatedAt:   item.CreatedAt.Time,
+		}
+		// Append the struct to the struct array
+		evs = append(evs, event)
+	}
+
+	return domain.EventsFetch{
+		Page:          page,
+		NumberOfPages: uint(math.Ceil(float64(count) / float64((params.Limit)))),
+		Total:         uint(count),
+		Data:          evs,
+	}, nil
+
+}
+
+func getPage(offset, limit int32) uint {
+	return uint((offset / limit) + 1)
 }
