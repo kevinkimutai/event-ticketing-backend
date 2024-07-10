@@ -33,6 +33,42 @@ func (q *Queries) CreateTicketOrder(ctx context.Context, attendeeID pgtype.Int8)
 	return i, err
 }
 
+const getTicketOrders = `-- name: GetTicketOrders :many
+SELECT order_id, payment_id, created_at, attendee_id, total_amount FROM ticket_orders
+LIMIT $1 OFFSET $2
+`
+
+type GetTicketOrdersParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetTicketOrders(ctx context.Context, arg GetTicketOrdersParams) ([]TicketOrder, error) {
+	rows, err := q.db.Query(ctx, getTicketOrders, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TicketOrder
+	for rows.Next() {
+		var i TicketOrder
+		if err := rows.Scan(
+			&i.OrderID,
+			&i.PaymentID,
+			&i.CreatedAt,
+			&i.AttendeeID,
+			&i.TotalAmount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateTotalAmountOrder = `-- name: UpdateTotalAmountOrder :exec
 UPDATE ticket_orders 
   set total_amount = $2

@@ -10,6 +10,7 @@ import (
 
 type TicketOrderApiPort interface {
 	CreateTicketOrder(order *domain.TicketOrderRequest, userID int64) (domain.TicketOrder, error)
+	GetTicketOrders(domain.Params) ([]domain.TicketOrder, error)
 }
 
 type TicketOrderService struct {
@@ -63,4 +64,29 @@ func (s *TicketOrderService) CreateTicketOrder(c *fiber.Ctx) error {
 			Data:       order,
 		})
 
+}
+
+func (s *TicketOrderService) GetTicketOrders(c *fiber.Ctx) error {
+	//Get Query Params
+	m := c.Queries()
+
+	//Bind Params
+	params := domain.CheckEventParams(m)
+
+	//Get All TicketOrders API
+	data, err := s.api.GetTicketOrders(params)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+
+	}
+	return c.Status(200).JSON(
+		domain.TicketOrdersResponse{
+			StatusCode: 200,
+			Message:    "Successfully retrieved orders",
+			Data:       data,
+		})
 }

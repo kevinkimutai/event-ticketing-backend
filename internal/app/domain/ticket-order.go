@@ -41,6 +41,11 @@ type TicketOrderResponse struct {
 	Message    string      `json:"message"`
 	Data       TicketOrder `json:"data"`
 }
+type TicketOrdersResponse struct {
+	StatusCode uint          `json:"status_code"`
+	Message    string        `json:"message"`
+	Data       []TicketOrder `json:"data"`
+}
 
 type TicketOrderRequest struct {
 	OrderItems []TicketOrderItem `json:"order_items"`

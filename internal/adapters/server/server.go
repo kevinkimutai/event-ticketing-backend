@@ -70,7 +70,7 @@ func (s *ServerAdapter) StartServer() {
 	app.Route("/api/v1/event", s.EventRouter)
 	app.Route("/api/v1/category", s.CategoryRouter)
 	app.Route("/api/v1/ticket-type", s.TicketTypeRouter)
-	app.Route("/api/v1/ticket", s.TicketRouter)
+	app.Route("/api/v1/ticket-order", s.TicketRouter)
 
 	app.Listen(":" + s.port)
 

@@ -140,3 +140,26 @@ func (db *DBAdapter) CreateTicketOrder(t *domain.TicketOrderRequest, userID int6
 	}, nil
 
 }
+
+func (db *DBAdapter) GetTicketOrders(params domain.Params) ([]domain.TicketOrder, error) {
+	torders, err := db.queries.GetTicketOrders(context.Background(), queries.GetTicketOrdersParams{
+		Limit:  params.Limit,
+		Offset: params.Page,
+	})
+
+	var ticketOrders []domain.TicketOrder
+	for _, v := range torders {
+		order := domain.TicketOrder{
+			OrderID:     v.OrderID,
+			PaymentID:   v.PaymentID,
+			AttendeeID:  v.PaymentID.Int64,
+			TotalAmount: utils.ConvertNumericToFloat64(v.TotalAmount),
+			CreatedAt:   v.CreatedAt.Time,
+		}
+
+		ticketOrders = append(ticketOrders, order)
+
+	}
+
+	return ticketOrders, err
+}
