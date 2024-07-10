@@ -28,3 +28,24 @@ func (db *DBAdapter) CreateTicketType(ttype *domain.TicketType) (domain.TicketTy
 	}, err
 
 }
+
+func (db *DBAdapter) GetTicketTypesByEvent(eventID int64) ([]domain.TicketType, error) {
+	ttypes, err := db.queries.GetTicketTypesByEvent(context.Background(), eventID)
+
+	var tt []domain.TicketType
+
+	for _, v := range ttypes {
+		ticketType := domain.TicketType{
+			EventID:          v.EventID,
+			TicketTypeID:     v.TicketTypeID,
+			Name:             v.Name.String,
+			Price:            utils.ConvertNumericToFloat64(v.Price),
+			TotalTickets:     v.TotalTickets,
+			RemainingTickets: v.RemainingTickets,
+		}
+
+		tt = append(tt, ticketType)
+	}
+
+	return tt, err
+}

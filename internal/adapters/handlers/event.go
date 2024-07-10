@@ -98,7 +98,7 @@ func (s *EventService) GetEvents(c *fiber.Ctx) error {
 	return c.Status(200).JSON(
 		domain.EventsResponse{
 			StatusCode:    200,
-			Message:       "Successfully retrieved products",
+			Message:       "Successfully retrieved events",
 			Page:          data.Page,
 			NumberOfPages: data.NumberOfPages,
 			Total:         data.Total,

@@ -21,3 +21,7 @@ UPDATE ticket_types
   set remaining_tickets = $2
 
 WHERE ticket_type_id = $1;
+
+-- name: GetTicketTypesByEvent :many
+SELECT * FROM ticket_types
+WHERE event_id = $1;

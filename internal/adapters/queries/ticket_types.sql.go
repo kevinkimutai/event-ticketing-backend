@@ -99,6 +99,38 @@ func (q *Queries) GetTicketType(ctx context.Context, ticketTypeID int64) (Ticket
 	return i, err
 }
 
+const getTicketTypesByEvent = `-- name: GetTicketTypesByEvent :many
+SELECT ticket_type_id, name, price, total_tickets, remaining_tickets, event_id FROM ticket_types
+WHERE event_id = $1
+`
+
+func (q *Queries) GetTicketTypesByEvent(ctx context.Context, eventID int64) ([]TicketType, error) {
+	rows, err := q.db.Query(ctx, getTicketTypesByEvent, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TicketType
+	for rows.Next() {
+		var i TicketType
+		if err := rows.Scan(
+			&i.TicketTypeID,
+			&i.Name,
+			&i.Price,
+			&i.TotalTickets,
+			&i.RemainingTickets,
+			&i.EventID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateRemainingTicketType = `-- name: UpdateRemainingTicketType :exec
 UPDATE ticket_types
   set remaining_tickets = $2

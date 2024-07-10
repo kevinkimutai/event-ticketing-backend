@@ -16,3 +16,23 @@ func (db *DBAdapter) CreateCategory(category *domain.Category) (domain.Category,
 		Name:       cat.Name,
 	}, err
 }
+
+func (db *DBAdapter) GetCategories() ([]domain.Category, error) {
+	ctx := context.Background()
+
+	cats, err := db.queries.ListCategories(ctx)
+
+	var categories []domain.Category
+
+	for _, v := range cats {
+		c := domain.Category{
+			CategoryID: v.CategoryID,
+			Name:       v.Name,
+		}
+
+		categories = append(categories, c)
+	}
+
+	return categories, err
+
+}

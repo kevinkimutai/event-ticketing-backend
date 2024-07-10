@@ -9,6 +9,7 @@ import (
 
 type CategoryApiPort interface {
 	CreateCategory(*domain.Category) (domain.Category, error)
+	GetCategories() ([]domain.Category, error)
 }
 
 type CategoryService struct {
@@ -55,8 +56,28 @@ func (s *CategoryService) CreateCategory(c *fiber.Ctx) error {
 	return c.Status(201).JSON(
 		domain.CategoryResponse{
 			StatusCode: 201,
-			Message:    "Event created successfully",
+			Message:    "event created successfully",
 			Data:       cat,
 		})
 
+}
+
+func (s *CategoryService) GetCategories(c *fiber.Ctx) error {
+
+	//Get All Categories API
+	categories, err := s.api.GetCategories()
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+
+	}
+	return c.Status(200).JSON(
+		domain.CategoriesResponse{
+			StatusCode: 200,
+			Message:    "Successfully retrieved categories",
+			Data:       categories,
+		})
 }

@@ -16,6 +16,11 @@ type TicketTypeResponse struct {
 	Message    string     `json:"message"`
 	Data       TicketType `json:"data"`
 }
+type TicketTypesResponse struct {
+	StatusCode uint         `json:"status_code"`
+	Message    string       `json:"message"`
+	Data       []TicketType `json:"data"`
+}
 
 func NewTicketTypeDomain(t *TicketType) error {
 

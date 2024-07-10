@@ -18,9 +18,11 @@ type eventHandlerPort interface {
 
 type categoryHandlerPort interface {
 	CreateCategory(*fiber.Ctx) error
+	GetCategories(*fiber.Ctx) error
 }
 type ticketTypeHandlerPort interface {
 	CreateTicketType(*fiber.Ctx) error
+	GetTicketTypesByEvent(c *fiber.Ctx) error
 }
 
 type ticketHandlerPort interface {
@@ -62,7 +64,7 @@ func (s *ServerAdapter) StartServer() {
 
 	//Auth Middleware
 	//Must be Authenticated
-	app.Use(s.auth.IsAuthenticated)
+	//app.Use(s.auth.IsAuthenticated)
 
 	// Define routes
 	app.Route("/api/v1/event", s.EventRouter)

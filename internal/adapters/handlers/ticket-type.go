@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/kevinkimutai/ticketingapp/internal/app/domain"
 )
 
 type TicketTypeApiPort interface {
 	CreateTicketType(t *domain.TicketType) (domain.TicketType, error)
+	GetTicketTypesByEvent(int64) ([]domain.TicketType, error)
 }
 
 type TicketTypeService struct {
@@ -58,6 +61,39 @@ func (s *TicketTypeService) CreateTicketType(c *fiber.Ctx) error {
 			StatusCode: 201,
 			Message:    "Event created successfully",
 			Data:       newttype,
+		})
+
+}
+
+func (s *TicketTypeService) GetTicketTypesByEvent(c *fiber.Ctx) error {
+	eventID := c.Params("eventID")
+
+	intEvent, err := strconv.ParseInt(eventID, 10, 32)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+	}
+
+	//API
+	tickettypes, err := s.api.GetTicketTypesByEvent(intEvent)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+
+	}
+
+	//JSON Response
+	return c.Status(200).JSON(
+		domain.TicketTypesResponse{
+			StatusCode: 200,
+			Message:    "Ticket Types retrieved successfully",
+			Data:       tickettypes,
 		})
 
 }
