@@ -98,13 +98,13 @@ func pdfTickets(pdf *gofpdf.Fpdf, tickets []queries.GetTicketsByOrderIDRow) {
 		// Ticket details in columns
 		pdf.SetFont("Arial", "B", 12)
 		pdf.CellFormat(60, 10, "Event:", "", 0, "", false, 0, "")
-		pdf.CellFormat(60, 10, "Location:", "", 0, "", false, 0, "")
+		pdf.CellFormat(60, 10, "Ticket-Type:", "", 0, "", false, 0, "")
 		pdf.CellFormat(30, 10, "Date:", "", 0, "", false, 0, "")
 		pdf.Ln(6)
 
 		pdf.SetFont("Arial", "", 12)
 		pdf.CellFormat(60, 10, ticket.Name_2, "", 0, "", false, 0, "")
-		pdf.CellFormat(60, 10, ticket.Location, "", 0, "", false, 0, "")
+		pdf.CellFormat(60, 10, ticket.Name.String, "", 0, "", false, 0, "")
 		pdf.CellFormat(30, 10, formatDate(ticket.Date), "", 1, "", false, 0, "")
 
 		pdf.SetFont("Arial", "B", 12)
