@@ -7,6 +7,8 @@ package queries
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createAttendee = `-- name: CreateAttendee :one
@@ -26,6 +28,41 @@ func (q *Queries) CreateAttendee(ctx context.Context, userID int64) (Attendee, e
 		&i.UserID,
 		&i.OrderID,
 		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getAttendeeByUserID = `-- name: GetAttendeeByUserID :one
+SELECT attendee_id, a.user_id, order_id, a.created_at, u.user_id, full_name, email, u.created_at FROM attendees a
+JOIN users u
+ON a.user_id = u.user_id
+WHERE a.attendee_id=$1
+LIMIT 1
+`
+
+type GetAttendeeByUserIDRow struct {
+	AttendeeID  int64
+	UserID      int64
+	OrderID     pgtype.Int8
+	CreatedAt   pgtype.Timestamptz
+	UserID_2    int64
+	FullName    string
+	Email       string
+	CreatedAt_2 pgtype.Timestamptz
+}
+
+func (q *Queries) GetAttendeeByUserID(ctx context.Context, attendeeID int64) (GetAttendeeByUserIDRow, error) {
+	row := q.db.QueryRow(ctx, getAttendeeByUserID, attendeeID)
+	var i GetAttendeeByUserIDRow
+	err := row.Scan(
+		&i.AttendeeID,
+		&i.UserID,
+		&i.OrderID,
+		&i.CreatedAt,
+		&i.UserID_2,
+		&i.FullName,
+		&i.Email,
+		&i.CreatedAt_2,
 	)
 	return i, err
 }

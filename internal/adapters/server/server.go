@@ -64,7 +64,7 @@ func (s *ServerAdapter) StartServer() {
 
 	//Auth Middleware
 	//Must be Authenticated
-	//app.Use(s.auth.IsAuthenticated)
+	app.Use(s.auth.IsAuthenticated)
 
 	// Define routes
 	app.Route("/api/v1/event", s.EventRouter)

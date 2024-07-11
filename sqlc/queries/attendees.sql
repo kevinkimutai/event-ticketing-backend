@@ -7,3 +7,10 @@ INSERT INTO attendees (
 )
 RETURNING *;
 
+-- name: GetAttendeeByUserID :one
+SELECT * FROM attendees a
+JOIN users u
+ON a.user_id = u.user_id
+WHERE a.attendee_id=$1
+LIMIT 1; 
+

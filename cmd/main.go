@@ -9,6 +9,7 @@ import (
 	"github.com/kevinkimutai/ticketingapp/internal/adapters/auth"
 	"github.com/kevinkimutai/ticketingapp/internal/adapters/db"
 	handler "github.com/kevinkimutai/ticketingapp/internal/adapters/handlers"
+	"github.com/kevinkimutai/ticketingapp/internal/adapters/pdf"
 	"github.com/kevinkimutai/ticketingapp/internal/adapters/server"
 	application "github.com/kevinkimutai/ticketingapp/internal/app/api"
 )
@@ -47,10 +48,12 @@ func main() {
 	//msgQueue := queue.NewRabbitMQServer(RABBITMQSERVER)
 
 	//Repositories
+	pdfService := pdf.NewPDF()
+
 	eventRepo := application.NewEventRepo(dbAdapter)
 	categoriesRepo := application.NewCategoriesRepo(dbAdapter)
 	ticketTypeRepo := application.NewTicketTypeRepo(dbAdapter)
-	ticketOrderRepo := application.NewTicketOrderRepo(dbAdapter)
+	ticketOrderRepo := application.NewTicketOrderRepo(dbAdapter, pdfService)
 
 	//Services
 	eventService := handler.NewEventService(eventRepo)
