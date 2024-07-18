@@ -13,20 +13,28 @@ type TicketOrderRepoPort interface {
 }
 
 type TicketPDFPort interface {
-	GenerateTicket(queries.GetAttendeeByUserIDRow, []queries.GetTicketsByOrderIDRow) error
+	GenerateTicket(queries.GetAttendeeByUserIDRow, []queries.GetTicketsByOrderIDRow) (string, error)
+}
+
+type QueuePort interface {
+	SendOrderConfirmation(email, fullName, ticketPDFUrl string)
 }
 
 type TicketOrderRepo struct {
-	db  TicketOrderRepoPort
-	pdf TicketPDFPort
+	db    TicketOrderRepoPort
+	pdf   TicketPDFPort
+	queue QueuePort
 }
 
-func NewTicketOrderRepo(db TicketOrderRepoPort, pdf TicketPDFPort) *TicketOrderRepo {
-	return &TicketOrderRepo{db: db, pdf: pdf}
+func NewTicketOrderRepo(db TicketOrderRepoPort, pdf TicketPDFPort, queue QueuePort) *TicketOrderRepo {
+	return &TicketOrderRepo{
+		db:    db,
+		pdf:   pdf,
+		queue: queue}
 }
 
-func (r *TicketOrderRepo) CreateTicketOrder(order *domain.TicketOrderRequest, userID int64) (domain.TicketOrder, error) {
-	ticketOrder, err := r.db.CreateTicketOrder(order, userID)
+func (r *TicketOrderRepo) CreateTicketOrder(order *domain.TicketOrderRequest, user queries.User) (domain.TicketOrder, error) {
+	ticketOrder, err := r.db.CreateTicketOrder(order, user.UserID)
 	if err != nil {
 		return domain.TicketOrder{}, err
 	}
@@ -44,7 +52,13 @@ func (r *TicketOrderRepo) CreateTicketOrder(order *domain.TicketOrderRequest, us
 	}
 
 	//Send To Ticket Generator
-	r.pdf.GenerateTicket(attendee, tickets)
+	filePath, err := r.pdf.GenerateTicket(attendee, tickets)
+	if err != nil {
+		return domain.TicketOrder{}, err
+	}
+
+	//Send Email Queue
+	r.queue.SendOrderConfirmation(user.Email, user.FullName, filePath)
 
 	return ticketOrder, nil
 }

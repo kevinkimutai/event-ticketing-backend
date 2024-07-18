@@ -28,6 +28,7 @@ type ticketTypeHandlerPort interface {
 type ticketHandlerPort interface {
 	CreateTicketOrder(*fiber.Ctx) error
 }
+
 type ServerAdapter struct {
 	port       string
 	auth       authHandlerPort
@@ -44,6 +45,7 @@ func New(
 	category categoryHandlerPort,
 	tickettype ticketTypeHandlerPort,
 	ticket ticketHandlerPort,
+
 ) *ServerAdapter {
 	return &ServerAdapter{
 		port:       port,
@@ -56,11 +58,18 @@ func New(
 }
 
 func (s *ServerAdapter) StartServer() {
+
 	//Initialize Fiber
 	app := fiber.New()
 
+	//Serve Static Files
+	app.Static("/", "./public")
+
 	//Logger Middleware
 	app.Use(logger.New())
+
+	//Telemetry Observability Middleware
+	//app.Use(s.telemetry.OtelFiberMiddleware)
 
 	//Auth Middleware
 	//Must be Authenticated

@@ -9,7 +9,7 @@ import (
 )
 
 type TicketOrderApiPort interface {
-	CreateTicketOrder(order *domain.TicketOrderRequest, userID int64) (domain.TicketOrder, error)
+	CreateTicketOrder(order *domain.TicketOrderRequest, user queries.User) (domain.TicketOrder, error)
 	GetTicketOrders(domain.Params) ([]domain.TicketOrder, error)
 }
 
@@ -46,7 +46,7 @@ func (s *TicketOrderService) CreateTicketOrder(c *fiber.Ctx) error {
 	}
 
 	//API
-	order, err := s.api.CreateTicketOrder(ticketOrder, user.UserID)
+	order, err := s.api.CreateTicketOrder(ticketOrder, user)
 	if err != nil {
 		return c.Status(500).JSON(
 			domain.ErrorResponse{

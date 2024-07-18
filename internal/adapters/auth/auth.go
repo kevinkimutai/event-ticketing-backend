@@ -18,15 +18,20 @@ type DBRepoPort interface {
 	GetUserByEmail(string) (queries.User, error)
 }
 
+type QueuePort interface {
+	SendWelcomeEmail(email, fullName string)
+}
+
 // Authenticator is used to authenticate our users.
 type Authenticator struct {
 	*oidc.Provider
 	oauth2.Config
-	db DBRepoPort
+	db    DBRepoPort
+	queue QueuePort
 }
 
 // New instantiates the *Authenticator.
-func New(db DBRepoPort) (*Authenticator, error) {
+func New(db DBRepoPort, queue QueuePort) (*Authenticator, error) {
 	provider, err := oidc.NewProvider(
 		context.Background(),
 		os.Getenv("AUTH0_URL"),
@@ -47,6 +52,7 @@ func New(db DBRepoPort) (*Authenticator, error) {
 		Provider: provider,
 		Config:   conf,
 		db:       db,
+		queue:    queue,
 	}, nil
 }
 
@@ -162,6 +168,9 @@ func (a *Authenticator) IsAuthenticated(c *fiber.Ctx) error {
 		if err != nil {
 			fmt.Println("Error", err)
 		}
+
+		//Send Welcome Queue Message
+		a.queue.SendWelcomeEmail(cus.Email, cus.FullName)
 
 		c.Locals("customer", cus)
 

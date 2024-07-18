@@ -10,6 +10,7 @@ import (
 	"github.com/kevinkimutai/ticketingapp/internal/adapters/db"
 	handler "github.com/kevinkimutai/ticketingapp/internal/adapters/handlers"
 	"github.com/kevinkimutai/ticketingapp/internal/adapters/pdf"
+	"github.com/kevinkimutai/ticketingapp/internal/adapters/rabbitmq"
 	"github.com/kevinkimutai/ticketingapp/internal/adapters/server"
 	application "github.com/kevinkimutai/ticketingapp/internal/app/api"
 )
@@ -23,6 +24,7 @@ func main() {
 
 	//Env Variables
 	APP_PORT := os.Getenv("APP_PORT")
+	RABBITMQ_SERVER_URL := os.Getenv("RABBITMQ_SERVER")
 	POSTGRES_USERNAME := os.Getenv("POSTGRES_USERNAME")
 	POSTGRES_PASSWORD := os.Getenv("POSTGRES_PASSWORD")
 	DATABASE_HOST := os.Getenv("DB_HOST")
@@ -49,19 +51,22 @@ func main() {
 
 	//Repositories
 	pdfService := pdf.NewPDF()
+	queue := rabbitmq.NewRabbitMQServer(RABBITMQ_SERVER_URL)
 
 	eventRepo := application.NewEventRepo(dbAdapter)
 	categoriesRepo := application.NewCategoriesRepo(dbAdapter)
 	ticketTypeRepo := application.NewTicketTypeRepo(dbAdapter)
-	ticketOrderRepo := application.NewTicketOrderRepo(dbAdapter, pdfService)
+	ticketOrderRepo := application.NewTicketOrderRepo(dbAdapter, pdfService, queue)
 
 	//Services
+	//telemetryService := telemetry.NewTelemetryService()
+
 	eventService := handler.NewEventService(eventRepo)
 	categoryService := handler.NewCategoryService(categoriesRepo)
 	ticketTypeService := handler.NewTicketTypeService(ticketTypeRepo)
 	ticketOrderService := handler.NewTicketOrderService(ticketOrderRepo)
 
-	authService, err := auth.New(dbAdapter)
+	authService, err := auth.New(dbAdapter, queue)
 	if err != nil {
 		log.Fatal(err)
 	}

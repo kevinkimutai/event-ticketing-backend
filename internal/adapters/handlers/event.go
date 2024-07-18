@@ -79,6 +79,7 @@ func (s *EventService) CreateEvent(c *fiber.Ctx) error {
 }
 
 func (s *EventService) GetEvents(c *fiber.Ctx) error {
+
 	//Get Query Params
 	m := c.Queries()
 
@@ -107,6 +108,12 @@ func (s *EventService) GetEvents(c *fiber.Ctx) error {
 }
 
 func (s *EventService) GetEvent(c *fiber.Ctx) error {
+
+	// //Telemetry Tracer
+	// ctx := c.UserContext()
+	// _, span := s.t.Tracer().Start(ctx, "CreateEvent")
+	// defer span.End()
+
 	eventID := c.Params("eventID")
 
 	//convert To int64
