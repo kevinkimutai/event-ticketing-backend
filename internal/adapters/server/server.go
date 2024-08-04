@@ -29,6 +29,9 @@ type ticketTypeHandlerPort interface {
 type ticketHandlerPort interface {
 	CreateTicketOrder(*fiber.Ctx) error
 }
+type LocationHandlerPort interface {
+	GetLocationByID(*fiber.Ctx) error
+}
 
 type ServerAdapter struct {
 	port       string
@@ -37,6 +40,7 @@ type ServerAdapter struct {
 	category   categoryHandlerPort
 	tickettype ticketTypeHandlerPort
 	ticket     ticketHandlerPort
+	location   LocationHandlerPort
 }
 
 func New(
@@ -46,6 +50,7 @@ func New(
 	category categoryHandlerPort,
 	tickettype ticketTypeHandlerPort,
 	ticket ticketHandlerPort,
+	location LocationHandlerPort,
 
 ) *ServerAdapter {
 	return &ServerAdapter{
@@ -55,6 +60,7 @@ func New(
 		category:   category,
 		tickettype: tickettype,
 		ticket:     ticket,
+		location:   location,
 	}
 }
 
@@ -88,6 +94,7 @@ func (s *ServerAdapter) StartServer() {
 	app.Route("/api/v1/category", s.CategoryRouter)
 	app.Route("/api/v1/ticket-type", s.TicketTypeRouter)
 	app.Route("/api/v1/ticket-order", s.TicketRouter)
+	app.Route("/api/v1/location", s.LocationRouter)
 
 	app.Listen(":" + s.port)
 
