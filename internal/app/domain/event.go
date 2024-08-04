@@ -21,6 +21,7 @@ type Event struct {
 	Latitude    float64   `json:"latitude"`
 	CreatedAt   time.Time `json:"created_at"`
 	PosterUrl   string    `json:"poster_url"`
+	LocationID  int64     `json:"location_id"`
 }
 
 type GetEventRow struct {
@@ -107,6 +108,9 @@ func NewEventDomain(e *Event) error {
 	}
 	if e.PosterUrl == "" {
 		return errors.New("missing poster")
+	}
+	if e.LocationID == 0 {
+		return errors.New("missing location_id")
 	}
 
 	return nil

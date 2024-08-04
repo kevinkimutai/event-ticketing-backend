@@ -28,7 +28,7 @@ func (q *Queries) CreateTicket(ctx context.Context, ticketTypeID int64) (Ticket,
 }
 
 const getTicketsByOrderID = `-- name: GetTicketsByOrderID :many
-SELECT item_id, order_id, it.ticket_id, quantity, total_price, t.ticket_id, t.ticket_type_id, tty.ticket_type_id, tty.name, price, total_tickets, remaining_tickets, tty.event_id, ev.event_id, ev.name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude, poster_url FROM ticket_order_items it
+SELECT item_id, order_id, it.ticket_id, quantity, total_price, t.ticket_id, t.ticket_type_id, tty.ticket_type_id, tty.name, price, total_tickets, remaining_tickets, tty.event_id, ev.event_id, ev.name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude, poster_url, location_id FROM ticket_order_items it
 JOIN tickets t
 ON t.ticket_id = it.ticket_id
 JOIN ticket_types tty
@@ -64,6 +64,7 @@ type GetTicketsByOrderIDRow struct {
 	Longitude        float64
 	Latitude         float64
 	PosterUrl        string
+	LocationID       int64
 }
 
 func (q *Queries) GetTicketsByOrderID(ctx context.Context, orderID int64) ([]GetTicketsByOrderIDRow, error) {
@@ -101,6 +102,7 @@ func (q *Queries) GetTicketsByOrderID(ctx context.Context, orderID int64) ([]Get
 			&i.Longitude,
 			&i.Latitude,
 			&i.PosterUrl,
+			&i.LocationID,
 		); err != nil {
 			return nil, err
 		}

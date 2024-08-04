@@ -6,7 +6,7 @@ CREATE TABLE location (
 
 -- Add location_id column to events table
 ALTER TABLE events 
-ADD COLUMN location_id BIGINT;
+ADD COLUMN location_id BIGINT NOT NULL;
 
 -- Add foreign key constraint
 ALTER TABLE events

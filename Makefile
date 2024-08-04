@@ -4,6 +4,8 @@ createdb:
 	 docker exec -it postgresdb createdb --username=root --owner=root eticketing
 dropdb: 
 	docker exec -it postgresdb dropdb eticketing
+migrateforce:
+	migrate -path ./migrations -database "postgresql://root:p@ssw0rd@localhost:5431/eticketing?sslmode=disable" force 0
 migrateup:
 	migrate -path "./migrations" -database "postgresql://root:p@ssw0rd@localhost:5431/eticketing?sslmode=disable" -verbose up 
 migratedown:

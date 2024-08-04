@@ -39,6 +39,12 @@ type Event struct {
 	Longitude   float64
 	Latitude    float64
 	PosterUrl   string
+	LocationID  int64
+}
+
+type Location struct {
+	LocationID int64
+	Name       string
 }
 
 type Organiser struct {
