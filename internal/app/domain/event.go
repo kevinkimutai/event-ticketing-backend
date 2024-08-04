@@ -94,16 +94,16 @@ func NewEventDomain(e *Event) error {
 		return errors.New("missing totime field")
 	}
 	if e.Description == "" {
-		return errors.New("missing totime field")
+		return errors.New("missing description field")
 	}
 	if e.Location == "" {
-		return errors.New("missing totime field")
+		return errors.New("missing location field")
 	}
 	if e.Longitude == 0 {
-		return errors.New("missing totime field")
+		return errors.New("missing longitude field")
 	}
 	if e.Latitude == 0 {
-		return errors.New("missing totime field")
+		return errors.New("missing latitude field")
 	}
 	if e.PosterUrl == "" {
 		return errors.New("missing poster")
