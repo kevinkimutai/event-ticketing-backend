@@ -31,6 +31,7 @@ type ticketHandlerPort interface {
 }
 type LocationHandlerPort interface {
 	GetLocationByID(*fiber.Ctx) error
+	GetLocations(c *fiber.Ctx) error
 }
 
 type ServerAdapter struct {

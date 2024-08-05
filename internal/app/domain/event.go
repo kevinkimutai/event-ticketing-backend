@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -71,9 +72,10 @@ type ErrorResponse struct {
 }
 
 type Params struct {
-	Page     int32
-	Limit    int32
-	Category string
+	Page       int32
+	Limit      int32
+	CategoryID int64
+	LocationID int64
 }
 
 //Check Missing Data
@@ -116,8 +118,9 @@ func NewEventDomain(e *Event) error {
 	return nil
 }
 
-func CheckEventParams(m map[string]string) Params {
+func CheckEventParams(m map[string]string) *Params {
 	var LIMIT, OFFSET int32 = 10, 0
+	var Location_ID, Category_ID int64
 
 	if m["limit"] != "" {
 		items, _ := strconv.Atoi(m["limit"])
@@ -135,10 +138,22 @@ func CheckEventParams(m map[string]string) Params {
 		OFFSET = (int32(page) - 1) * LIMIT
 
 	}
+	if m["location_id"] != "" {
+		locID, _ := strconv.ParseInt(m["location_id"], 10, 32)
+		Location_ID = locID
+	}
+	if m["category_id"] != "" {
+		catID, _ := strconv.ParseInt(m["category_id"], 10, 32)
+		Category_ID = catID
+	}
 
-	return Params{
-		Page:     OFFSET,
-		Limit:    LIMIT,
-		Category: m["category"],
+	fmt.Println("LOcation", Location_ID)
+	fmt.Println("Category", Category_ID)
+
+	return &Params{
+		Page:       OFFSET,
+		Limit:      LIMIT,
+		CategoryID: Category_ID,
+		LocationID: Location_ID,
 	}
 }

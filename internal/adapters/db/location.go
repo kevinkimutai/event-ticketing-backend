@@ -16,3 +16,22 @@ func (db *DBAdapter) GetLocationByID(locationID int64) (domain.Location, error) 
 		Name:       loc.Name,
 	}, err
 }
+
+func (db *DBAdapter) GetLocations() ([]domain.Location, error) {
+	ctx := context.Background()
+
+	locs, err := db.queries.ListLocations(ctx)
+
+	var locations []domain.Location
+
+	for _, v := range locs {
+		c := domain.Location{
+			LocationID: v.LocationID,
+			Name:       v.Name,
+		}
+
+		locations = append(locations, c)
+	}
+
+	return locations, err
+}

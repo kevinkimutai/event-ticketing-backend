@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"math"
 
@@ -71,14 +72,25 @@ func (db *DBAdapter) CreateEvent(event *domain.Event, userID int64) (domain.Even
 	}, nil
 }
 
-func (db *DBAdapter) GetEvents(params domain.Params) (domain.EventsFetch, error) {
+func (db *DBAdapter) GetEvents(params *domain.Params) (domain.EventsFetch, error) {
 	ctx := context.Background()
 
-	//Get Products
-	events, err := db.queries.ListUpcomingEvents(ctx, queries.ListUpcomingEventsParams{
+	var eParams = queries.ListUpcomingEventsParams{
 		Limit:  params.Limit,
 		Offset: params.Page,
-	})
+	}
+
+	if params.CategoryID != 0 {
+		eParams.CategoryID = sql.NullInt64{Int64: params.CategoryID, Valid: true}
+	}
+
+	if params.LocationID != 0 {
+		eParams.LocationID = sql.NullInt64{Int64: params.LocationID, Valid: true}
+	}
+
+	// fmt.Println(eParams.CategoryID, eParams.LocationID)
+	//Get Products
+	events, err := db.queries.ListUpcomingEvents(ctx, eParams)
 	if err != nil {
 		return domain.EventsFetch{}, err
 

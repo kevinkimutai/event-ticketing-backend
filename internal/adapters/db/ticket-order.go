@@ -141,7 +141,7 @@ func (db *DBAdapter) CreateTicketOrder(t *domain.TicketOrderRequest, userID int6
 
 }
 
-func (db *DBAdapter) GetTicketOrders(params domain.Params) ([]domain.TicketOrder, error) {
+func (db *DBAdapter) GetTicketOrders(params *domain.Params) ([]domain.TicketOrder, error) {
 	torders, err := db.queries.GetTicketOrders(context.Background(), queries.GetTicketOrdersParams{
 		Limit:  params.Limit,
 		Offset: params.Page,

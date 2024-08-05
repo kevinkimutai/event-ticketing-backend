@@ -11,8 +11,8 @@ type LocationResponse struct {
 	Data       Location `json:"data"`
 }
 
-// type CategoriesResponse struct {
-// 	StatusCode uint       `json:"status_code"`
-// 	Message    string     `json:"message"`
-// 	Data       []Category `json:"data"`
-// }
+type LocationsResponse struct {
+	StatusCode uint       `json:"status_code"`
+	Message    string     `json:"message"`
+	Data       []Location `json:"data"`
+}

@@ -9,6 +9,7 @@ import (
 
 type LocationApiPort interface {
 	GetLocationByID(locationID int64) (domain.Location, error)
+	GetLocations() ([]domain.Location, error)
 }
 
 type LocationService struct {
@@ -50,4 +51,24 @@ func (s *LocationService) GetLocationByID(c *fiber.Ctx) error {
 		Data:       loc,
 	})
 
+}
+
+func (s *LocationService) GetLocations(c *fiber.Ctx) error {
+
+	//Get All Categories API
+	categories, err := s.api.GetLocations()
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+
+	}
+	return c.Status(200).JSON(
+		domain.LocationsResponse{
+			StatusCode: 200,
+			Message:    "Successfully retrieved locations",
+			Data:       categories,
+		})
 }

@@ -10,8 +10,10 @@ LIMIT $1 OFFSET $2;
 -- name: ListUpcomingEvents :many
 SELECT * 
 FROM events
-WHERE date > NOW() OR (date = NOW()::DATE AND to_time > NOW())
- AND (category_id = $3 OR $3 IS NULL)
+WHERE (date > NOW() OR (date = NOW() AND to_time > NOW()))
+  AND (category_id = $3 OR $3 IS NULL)
+  AND (location_id = $4 OR $4 IS NULL)
+ORDER BY date, to_time
 LIMIT $1 OFFSET $2;
 
 

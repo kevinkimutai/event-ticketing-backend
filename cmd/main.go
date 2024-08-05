@@ -81,7 +81,7 @@ func main() {
 		categoryService,
 		ticketTypeService,
 		ticketOrderService,
-		locationService
+		locationService,
 	)
 
 	server.StartServer()

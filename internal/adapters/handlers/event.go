@@ -11,7 +11,7 @@ import (
 
 type EventApiPort interface {
 	CreateEvent(event *domain.Event, userID int64) (domain.Event, error)
-	GetEvents(domain.Params) (domain.EventsFetch, error)
+	GetEvents(*domain.Params) (domain.EventsFetch, error)
 	GetEventByID(int64) (domain.Event, error)
 }
 

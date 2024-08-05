@@ -7,7 +7,7 @@ import (
 
 type TicketOrderRepoPort interface {
 	CreateTicketOrder(order *domain.TicketOrderRequest, userID int64) (domain.TicketOrder, error)
-	GetTicketOrders(params domain.Params) ([]domain.TicketOrder, error)
+	GetTicketOrders(params *domain.Params) ([]domain.TicketOrder, error)
 	GetAttendeeByUserID(attendeeID int64) (queries.GetAttendeeByUserIDRow, error)
 	GetTicketsByOrderID(orderID int64) ([]queries.GetTicketsByOrderIDRow, error)
 }
@@ -63,7 +63,7 @@ func (r *TicketOrderRepo) CreateTicketOrder(order *domain.TicketOrderRequest, us
 	return ticketOrder, nil
 }
 
-func (r *TicketOrderRepo) GetTicketOrders(params domain.Params) ([]domain.TicketOrder, error) {
+func (r *TicketOrderRepo) GetTicketOrders(params *domain.Params) ([]domain.TicketOrder, error) {
 	//Ticket Order
 	torders, err := r.db.GetTicketOrders(params)
 

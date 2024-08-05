@@ -10,7 +10,7 @@ import (
 
 type TicketOrderApiPort interface {
 	CreateTicketOrder(order *domain.TicketOrderRequest, user queries.User) (domain.TicketOrder, error)
-	GetTicketOrders(domain.Params) ([]domain.TicketOrder, error)
+	GetTicketOrders(*domain.Params) ([]domain.TicketOrder, error)
 }
 
 type TicketOrderService struct {

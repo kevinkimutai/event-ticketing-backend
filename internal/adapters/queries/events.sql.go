@@ -5,10 +5,13 @@
 
 package queries
 
+
+
 import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"database/sql"
 )
 
 const createEvent = `-- name: CreateEvent :one
@@ -163,19 +166,27 @@ func (q *Queries) ListEvents(ctx context.Context, arg ListEventsParams) ([]Event
 const listUpcomingEvents = `-- name: ListUpcomingEvents :many
 SELECT event_id, name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude, poster_url, location_id 
 FROM events
-WHERE date > NOW() OR (date = NOW()::DATE AND to_time > NOW())
- AND (category_id = $3 OR $3 IS NULL)
+WHERE (date > NOW() OR (date = NOW() AND to_time > NOW()))
+  AND (category_id = $3 OR $3 IS NULL)
+  AND (location_id = $4 OR $4 IS NULL)
+ORDER BY date, to_time
 LIMIT $1 OFFSET $2
 `
 
 type ListUpcomingEventsParams struct {
 	Limit      int32
 	Offset     int32
-	CategoryID int64
+	CategoryID sql.NullInt64
+	LocationID sql.NullInt64
 }
 
 func (q *Queries) ListUpcomingEvents(ctx context.Context, arg ListUpcomingEventsParams) ([]Event, error) {
-	rows, err := q.db.Query(ctx, listUpcomingEvents, arg.Limit, arg.Offset, arg.CategoryID)
+	rows, err := q.db.Query(ctx, listUpcomingEvents,
+		arg.Limit,
+		arg.Offset,
+		arg.CategoryID,
+		arg.LocationID,
+	)
 	if err != nil {
 		return nil, err
 	}
