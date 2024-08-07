@@ -8,14 +8,14 @@ import (
 	"github.com/kevinkimutai/ticketingapp/internal/utils"
 )
 
-func (db *DBAdapter) CreateTicketType(ttype *domain.TicketType) (domain.TicketType, error) {
+func (db *DBAdapter) CreateTicketType(ttype *domain.TicketType, eventID int64) (domain.TicketType, error) {
 	ctx := context.Background()
 	tickettype, err := db.queries.CreateTicketType(ctx, queries.CreateTicketTypeParams{
 		Name:             utils.ConvertStringToText(ttype.Name),
 		Price:            utils.ConvertFloat64ToNumeric(ttype.Price),
 		TotalTickets:     ttype.TotalTickets,
 		RemainingTickets: ttype.RemainingTickets,
-		EventID:          ttype.EventID,
+		EventID:          eventID,
 	})
 
 	return domain.TicketType{

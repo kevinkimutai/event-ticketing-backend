@@ -3,7 +3,7 @@ package api
 import "github.com/kevinkimutai/ticketingapp/internal/app/domain"
 
 type TicketTypeRepoPort interface {
-	CreateTicketType(*domain.TicketType) (domain.TicketType, error)
+	CreateTicketType(t *domain.TicketType, eventID int64) (domain.TicketType, error)
 	GetTicketTypesByEvent(eventID int64) ([]domain.TicketType, error)
 }
 
@@ -15,8 +15,8 @@ func NewTicketTypeRepo(db TicketTypeRepoPort) *TicketTypeRepo {
 	return &TicketTypeRepo{db: db}
 }
 
-func (r *TicketTypeRepo) CreateTicketType(t *domain.TicketType) (domain.TicketType, error) {
-	ttype, err := r.db.CreateTicketType(t)
+func (r *TicketTypeRepo) CreateTicketType(t *domain.TicketType, eventID int64) (domain.TicketType, error) {
+	ttype, err := r.db.CreateTicketType(t, eventID)
 
 	return ttype, err
 }

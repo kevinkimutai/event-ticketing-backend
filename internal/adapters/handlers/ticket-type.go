@@ -8,7 +8,7 @@ import (
 )
 
 type TicketTypeApiPort interface {
-	CreateTicketType(t *domain.TicketType) (domain.TicketType, error)
+	CreateTicketType(t *domain.TicketType, eventID int64) (domain.TicketType, error)
 	GetTicketTypesByEvent(int64) ([]domain.TicketType, error)
 }
 
@@ -23,6 +23,8 @@ func NewTicketTypeService(api TicketTypeApiPort) *TicketTypeService {
 }
 
 func (s *TicketTypeService) CreateTicketType(c *fiber.Ctx) error {
+	eventID := c.Params("eventID")
+
 	tickettype := &domain.TicketType{}
 
 	//Bind To struct
@@ -34,8 +36,17 @@ func (s *TicketTypeService) CreateTicketType(c *fiber.Ctx) error {
 			})
 	}
 
+	intEvent, err := strconv.ParseInt(eventID, 10, 32)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+	}
+
 	//Check Missing Values
-	err := domain.NewTicketTypeDomain(tickettype)
+	err = domain.NewTicketTypeDomain(tickettype)
 	if err != nil {
 		return c.Status(400).JSON(
 			domain.ErrorResponse{
@@ -45,7 +56,7 @@ func (s *TicketTypeService) CreateTicketType(c *fiber.Ctx) error {
 	}
 
 	//API
-	newttype, err := s.api.CreateTicketType(tickettype)
+	newttype, err := s.api.CreateTicketType(tickettype, intEvent)
 	if err != nil {
 		return c.Status(500).JSON(
 			domain.ErrorResponse{
