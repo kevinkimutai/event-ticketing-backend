@@ -3,6 +3,8 @@
 //   sqlc v1.27.0
 // source: events.sql
 
+
+
 package queries
 
 import (

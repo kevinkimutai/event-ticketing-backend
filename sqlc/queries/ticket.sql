@@ -16,3 +16,6 @@ ON tty.ticket_type_id=t.ticket_type_id
 JOIN events ev
 ON ev.event_id =tty.event_id
 WHERE it.order_id = $1;
+
+-- name: GetTicketByTicketTypeID :one
+SELECT * FROM tickets WHERE ticket_type_id=$1;

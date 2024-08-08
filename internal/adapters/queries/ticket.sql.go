@@ -27,6 +27,17 @@ func (q *Queries) CreateTicket(ctx context.Context, ticketTypeID int64) (Ticket,
 	return i, err
 }
 
+const getTicketByTicketTypeID = `-- name: GetTicketByTicketTypeID :one
+SELECT ticket_id, ticket_type_id FROM tickets WHERE ticket_type_id=$1
+`
+
+func (q *Queries) GetTicketByTicketTypeID(ctx context.Context, ticketTypeID int64) (Ticket, error) {
+	row := q.db.QueryRow(ctx, getTicketByTicketTypeID, ticketTypeID)
+	var i Ticket
+	err := row.Scan(&i.TicketID, &i.TicketTypeID)
+	return i, err
+}
+
 const getTicketsByOrderID = `-- name: GetTicketsByOrderID :many
 SELECT item_id, order_id, it.ticket_id, quantity, total_price, t.ticket_id, t.ticket_type_id, tty.ticket_type_id, tty.name, price, total_tickets, remaining_tickets, tty.event_id, ev.event_id, ev.name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude, poster_url, location_id FROM ticket_order_items it
 JOIN tickets t

@@ -24,6 +24,7 @@ type categoryHandlerPort interface {
 type ticketTypeHandlerPort interface {
 	CreateTicketType(*fiber.Ctx) error
 	GetTicketTypesByEvent(c *fiber.Ctx) error
+	GetTicketByTicketTypeID(c *fiber.Ctx) error
 }
 
 type ticketHandlerPort interface {

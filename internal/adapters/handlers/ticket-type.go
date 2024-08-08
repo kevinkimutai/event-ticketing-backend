@@ -10,6 +10,7 @@ import (
 type TicketTypeApiPort interface {
 	CreateTicketType(t *domain.TicketType, eventID int64) (domain.TicketType, error)
 	GetTicketTypesByEvent(int64) ([]domain.TicketType, error)
+	GetTicket(ticketTypeID int64) (domain.Ticket, error)
 }
 
 type TicketTypeService struct {
@@ -107,4 +108,34 @@ func (s *TicketTypeService) GetTicketTypesByEvent(c *fiber.Ctx) error {
 			Data:       tickettypes,
 		})
 
+}
+func (s *TicketTypeService) GetTicketByTicketTypeID(c *fiber.Ctx) error {
+
+	ticketTypeID := c.Params("ticketTypeID")
+
+	//convert To int64
+	ticketTypeIDInt64, err := strconv.ParseInt(ticketTypeID, 10, 32)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+	}
+
+	//Get Product API
+	ticket, err := s.api.GetTicket(ticketTypeIDInt64)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+	}
+
+	return c.Status(200).JSON(domain.TicketResponse{
+		StatusCode: 200,
+		Message:    "success",
+		Data:       ticket,
+	})
 }

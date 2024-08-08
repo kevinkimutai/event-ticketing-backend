@@ -5,6 +5,7 @@ import "github.com/kevinkimutai/ticketingapp/internal/app/domain"
 type TicketTypeRepoPort interface {
 	CreateTicketType(t *domain.TicketType, eventID int64) (domain.TicketType, error)
 	GetTicketTypesByEvent(eventID int64) ([]domain.TicketType, error)
+	GetTicket(ticketTypeID int64) (domain.Ticket, error)
 }
 
 type TicketTypeRepo struct {
@@ -25,4 +26,10 @@ func (r *TicketTypeRepo) GetTicketTypesByEvent(eventID int64) ([]domain.TicketTy
 	ticketTypes, err := r.db.GetTicketTypesByEvent(eventID)
 
 	return ticketTypes, err
+}
+
+func (r *TicketTypeRepo) GetTicket(ticketTypeID int64) (domain.Ticket, error) {
+	ticket, err := r.db.GetTicket(ticketTypeID)
+
+	return ticket, err
 }
