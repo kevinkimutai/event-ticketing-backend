@@ -53,6 +53,7 @@ func main() {
 	pdfService := pdf.NewPDF()
 	queue := rabbitmq.NewRabbitMQServer(RABBITMQ_SERVER_URL)
 
+	userRepo := application.NewUserRepo(dbAdapter)
 	eventRepo := application.NewEventRepo(dbAdapter)
 	categoriesRepo := application.NewCategoriesRepo(dbAdapter)
 	ticketTypeRepo := application.NewTicketTypeRepo(dbAdapter)
@@ -62,6 +63,7 @@ func main() {
 	//Services
 	//telemetryService := telemetry.NewTelemetryService()
 
+	userService := handler.NewUserService(userRepo)
 	eventService := handler.NewEventService(eventRepo)
 	categoryService := handler.NewCategoryService(categoriesRepo)
 	ticketTypeService := handler.NewTicketTypeService(ticketTypeRepo)
@@ -82,6 +84,7 @@ func main() {
 		ticketTypeService,
 		ticketOrderService,
 		locationService,
+		userService,
 	)
 
 	server.StartServer()

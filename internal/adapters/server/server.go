@@ -28,10 +28,15 @@ type ticketTypeHandlerPort interface {
 
 type ticketHandlerPort interface {
 	CreateTicketOrder(*fiber.Ctx) error
+	// GetTicketsByEvent(*fiber.Ctx) error
 }
 type LocationHandlerPort interface {
 	GetLocationByID(*fiber.Ctx) error
 	GetLocations(c *fiber.Ctx) error
+}
+
+type UserHandlerPort interface {
+	GetUser(c *fiber.Ctx) error
 }
 
 type ServerAdapter struct {
@@ -42,6 +47,7 @@ type ServerAdapter struct {
 	tickettype ticketTypeHandlerPort
 	ticket     ticketHandlerPort
 	location   LocationHandlerPort
+	user       UserHandlerPort
 }
 
 func New(
@@ -52,6 +58,7 @@ func New(
 	tickettype ticketTypeHandlerPort,
 	ticket ticketHandlerPort,
 	location LocationHandlerPort,
+	user UserHandlerPort,
 
 ) *ServerAdapter {
 	return &ServerAdapter{
@@ -62,6 +69,7 @@ func New(
 		tickettype: tickettype,
 		ticket:     ticket,
 		location:   location,
+		user:       user,
 	}
 }
 
@@ -96,6 +104,7 @@ func (s *ServerAdapter) StartServer() {
 	app.Route("/api/v1/ticket-type", s.TicketTypeRouter)
 	app.Route("/api/v1/ticket-order", s.TicketRouter)
 	app.Route("/api/v1/location", s.LocationRouter)
+	app.Route("/api/v1/user", s.UserRouter)
 
 	app.Listen(":" + s.port)
 
