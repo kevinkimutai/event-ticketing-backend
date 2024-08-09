@@ -7,5 +7,8 @@ INSERT INTO ticket_order_items (
 )
 RETURNING *;
 
-
+-- name: GetTicketOrderItemByTicketID :one
+SELECT * FROM ticket_order_items
+WHERE ticket_id = $1 
+LIMIT 1;
 

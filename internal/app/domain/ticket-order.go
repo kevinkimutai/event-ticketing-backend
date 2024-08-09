@@ -7,9 +7,8 @@ import (
 )
 
 type Ticket struct {
-	TicketID     int64
-	EventID      int64
-	TicketTypeID int64
+	TicketID     int64 `json:"ticket_id"`
+	TicketTypeID int64 `json:"ticket_type_id"`
 }
 
 type TicketOrder struct {
@@ -40,6 +39,12 @@ type TicketOrderResponse struct {
 	StatusCode uint        `json:"status_code"`
 	Message    string      `json:"message"`
 	Data       TicketOrder `json:"data"`
+}
+
+type TicketOrderItemResponse struct {
+	StatusCode uint            `json:"status_code"`
+	Message    string          `json:"message"`
+	Data       TicketOrderItem `json:"data"`
 }
 type TicketOrdersResponse struct {
 	StatusCode uint          `json:"status_code"`

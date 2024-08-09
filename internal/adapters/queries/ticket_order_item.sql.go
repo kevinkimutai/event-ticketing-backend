@@ -44,3 +44,22 @@ func (q *Queries) CreateTicketOrderItem(ctx context.Context, arg CreateTicketOrd
 	)
 	return i, err
 }
+
+const getTicketOrderItemByTicketID = `-- name: GetTicketOrderItemByTicketID :one
+SELECT item_id, order_id, ticket_id, quantity, total_price FROM ticket_order_items
+WHERE ticket_id = $1 
+LIMIT 1
+`
+
+func (q *Queries) GetTicketOrderItemByTicketID(ctx context.Context, ticketID int64) (TicketOrderItem, error) {
+	row := q.db.QueryRow(ctx, getTicketOrderItemByTicketID, ticketID)
+	var i TicketOrderItem
+	err := row.Scan(
+		&i.ItemID,
+		&i.OrderID,
+		&i.TicketID,
+		&i.Quantity,
+		&i.TotalPrice,
+	)
+	return i, err
+}

@@ -163,3 +163,15 @@ func (db *DBAdapter) GetTicketOrders(params *domain.Params) ([]domain.TicketOrde
 
 	return ticketOrders, err
 }
+
+func (db *DBAdapter) GetTicketOrder(orderId int64) (domain.TicketOrder, error) {
+	ctx := context.Background()
+
+	tOrder, err := db.queries.GetTicketOrder(ctx, orderId)
+
+	return domain.TicketOrder{
+		OrderID:     tOrder.OrderID,
+		AttendeeID:  tOrder.AttendeeID.Int64,
+		TotalAmount: utils.ConvertNumericToFloat64(tOrder.TotalAmount),
+	}, err
+}

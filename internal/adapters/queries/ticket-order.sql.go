@@ -33,6 +33,25 @@ func (q *Queries) CreateTicketOrder(ctx context.Context, attendeeID pgtype.Int8)
 	return i, err
 }
 
+const getTicketOrder = `-- name: GetTicketOrder :one
+SELECT order_id, payment_id, created_at, attendee_id, total_amount FROM ticket_orders
+WHERE order_id =$1
+LIMIT 1
+`
+
+func (q *Queries) GetTicketOrder(ctx context.Context, orderID int64) (TicketOrder, error) {
+	row := q.db.QueryRow(ctx, getTicketOrder, orderID)
+	var i TicketOrder
+	err := row.Scan(
+		&i.OrderID,
+		&i.PaymentID,
+		&i.CreatedAt,
+		&i.AttendeeID,
+		&i.TotalAmount,
+	)
+	return i, err
+}
+
 const getTicketOrders = `-- name: GetTicketOrders :many
 SELECT order_id, payment_id, created_at, attendee_id, total_amount FROM ticket_orders
 LIMIT $1 OFFSET $2

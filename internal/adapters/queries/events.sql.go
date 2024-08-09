@@ -3,15 +3,13 @@
 //   sqlc v1.27.0
 // source: events.sql
 
-
-
 package queries
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"database/sql"
 )
 
 const createEvent = `-- name: CreateEvent :one

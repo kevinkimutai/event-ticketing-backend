@@ -10,6 +10,9 @@ type TicketOrderRepoPort interface {
 	GetTicketOrders(params *domain.Params) ([]domain.TicketOrder, error)
 	GetAttendeeByUserID(attendeeID int64) (queries.GetAttendeeByUserIDRow, error)
 	GetTicketsByOrderID(orderID int64) ([]queries.GetTicketsByOrderIDRow, error)
+	GetOrderItemByTicketID(ticketID int64) (domain.TicketOrderItem, error)
+
+	GetTicketOrder(orderItemId int64) (domain.TicketOrder, error)
 }
 
 type TicketPDFPort interface {
@@ -68,4 +71,17 @@ func (r *TicketOrderRepo) GetTicketOrders(params *domain.Params) ([]domain.Ticke
 	torders, err := r.db.GetTicketOrders(params)
 
 	return torders, err
+}
+
+func (r *TicketOrderRepo) GetOrderItemByTicketID(ticketID int64) (domain.TicketOrderItem, error) {
+	//Ticket OrderItem
+	torderitem, err := r.db.GetOrderItemByTicketID(ticketID)
+
+	return torderitem, err
+}
+
+func (r *TicketOrderRepo) GetOrder(orderItemID int64) (domain.TicketOrder, error) {
+	tOrder, err := r.db.GetTicketOrder(orderItemID)
+
+	return tOrder, err
 }

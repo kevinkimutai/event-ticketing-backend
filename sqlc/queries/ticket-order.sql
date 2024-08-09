@@ -16,3 +16,8 @@ WHERE order_id = $1;
 -- name: GetTicketOrders :many
 SELECT * FROM ticket_orders
 LIMIT $1 OFFSET $2;
+
+-- name: GetTicketOrder :one
+SELECT * FROM ticket_orders
+WHERE order_id =$1
+LIMIT 1;

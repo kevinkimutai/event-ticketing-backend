@@ -32,6 +32,24 @@ func (q *Queries) CreateAttendee(ctx context.Context, userID int64) (Attendee, e
 	return i, err
 }
 
+const getAttendee = `-- name: GetAttendee :one
+SELECT attendee_id, user_id, order_id, created_at FROM attendees
+WHERE attendee_id =$1
+LIMIT 1
+`
+
+func (q *Queries) GetAttendee(ctx context.Context, attendeeID int64) (Attendee, error) {
+	row := q.db.QueryRow(ctx, getAttendee, attendeeID)
+	var i Attendee
+	err := row.Scan(
+		&i.AttendeeID,
+		&i.UserID,
+		&i.OrderID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getAttendeeByUserID = `-- name: GetAttendeeByUserID :one
 SELECT attendee_id, a.user_id, order_id, a.created_at, u.user_id, full_name, email, u.created_at FROM attendees a
 JOIN users u

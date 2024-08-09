@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/kevinkimutai/ticketingapp/internal/adapters/queries"
@@ -11,6 +12,8 @@ import (
 type TicketOrderApiPort interface {
 	CreateTicketOrder(order *domain.TicketOrderRequest, user queries.User) (domain.TicketOrder, error)
 	GetTicketOrders(*domain.Params) ([]domain.TicketOrder, error)
+	GetOrderItemByTicketID(ticketID int64) (domain.TicketOrderItem, error)
+	GetOrder(orderItem int64) (domain.TicketOrder, error)
 }
 
 type TicketOrderService struct {
@@ -89,4 +92,63 @@ func (s *TicketOrderService) GetTicketOrders(c *fiber.Ctx) error {
 			Message:    "Successfully retrieved orders",
 			Data:       data,
 		})
+}
+func (s *TicketOrderService) GetOrder(c *fiber.Ctx) error {
+	orderItemID := c.Params("orderID")
+
+	//convert To int64
+	orderItemIDInt64, err := strconv.ParseInt(orderItemID, 10, 32)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+	}
+
+	//Get Product API
+	ticketOrder, err := s.api.GetOrder(orderItemIDInt64)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+	}
+
+	return c.Status(200).JSON(domain.TicketOrderResponse{
+		StatusCode: 200,
+		Message:    "success",
+		Data:       ticketOrder,
+	})
+}
+
+func (s *TicketOrderService) GetTicketOrderItem(c *fiber.Ctx) error {
+	ticketID := c.Params("ticketID")
+
+	//convert To int64
+	ticketIDInt64, err := strconv.ParseInt(ticketID, 10, 32)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+	}
+
+	//Get Product API
+	ticketOrderItem, err := s.api.GetOrderItemByTicketID(ticketIDInt64)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+	}
+
+	return c.Status(200).JSON(domain.TicketOrderItemResponse{
+		StatusCode: 200,
+		Message:    "success",
+		Data:       ticketOrderItem,
+	})
 }
