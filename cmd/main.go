@@ -61,6 +61,7 @@ func main() {
 	ticketOrderRepo := application.NewTicketOrderRepo(dbAdapter, pdfService, queue)
 	// ticketOrderItemRepo := application.NewTicketOrderItemRepo(dbAdapter)
 	attendeeRepo := application.NewAttendeeRepo(dbAdapter)
+	organiserRepo := application.NewOrganiserRepo(dbAdapter)
 	//Services
 	//telemetryService := telemetry.NewTelemetryService()
 
@@ -71,6 +72,7 @@ func main() {
 	ticketOrderService := handler.NewTicketOrderService(ticketOrderRepo)
 	locationService := handler.NewLocationService(locationRepo)
 	attendeeService := handler.NewAttendeeService(attendeeRepo)
+	organiserService := handler.NewOrganiserService(organiserRepo)
 	// ticketOrderItemService := handler.NewTicketOrderItemService(ticketOrderItemRepo)
 
 	authService, err := auth.New(dbAdapter, queue)
@@ -89,6 +91,7 @@ func main() {
 		locationService,
 		userService,
 		attendeeService,
+		organiserService,
 	)
 
 	server.StartServer()

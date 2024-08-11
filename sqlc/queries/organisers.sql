@@ -7,3 +7,10 @@ INSERT INTO organisers (
 )
 RETURNING *;
 
+-- name: GetOrganisersByUserID :many
+SELECT * FROM organisers 
+WHERE user_id = $1;
+
+-- name: GetCountOrganisersByUserID :many
+SELECT COUNT(*) FROM organisers
+WHERE user_id = $1;

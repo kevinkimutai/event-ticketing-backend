@@ -34,3 +34,58 @@ func (q *Queries) CreateOrganiser(ctx context.Context, arg CreateOrganiserParams
 	)
 	return i, err
 }
+
+const getCountOrganisersByUserID = `-- name: GetCountOrganisersByUserID :many
+SELECT COUNT(*) FROM organisers
+WHERE user_id = $1
+`
+
+func (q *Queries) GetCountOrganisersByUserID(ctx context.Context, userID int64) ([]int64, error) {
+	rows, err := q.db.Query(ctx, getCountOrganisersByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var count int64
+		if err := rows.Scan(&count); err != nil {
+			return nil, err
+		}
+		items = append(items, count)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getOrganisersByUserID = `-- name: GetOrganisersByUserID :many
+SELECT organiser_id, user_id, event_id, created_at FROM organisers 
+WHERE user_id = $1
+`
+
+func (q *Queries) GetOrganisersByUserID(ctx context.Context, userID int64) ([]Organiser, error) {
+	rows, err := q.db.Query(ctx, getOrganisersByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Organiser
+	for rows.Next() {
+		var i Organiser
+		if err := rows.Scan(
+			&i.OrganiserID,
+			&i.UserID,
+			&i.EventID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

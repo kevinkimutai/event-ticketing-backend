@@ -45,6 +45,10 @@ type AttendeeHandlerPort interface {
 	GetAttendee(c *fiber.Ctx) error
 }
 
+type OrganiserHandlerPort interface {
+	GetOrganiserByUserID(c *fiber.Ctx) error
+}
+
 type ServerAdapter struct {
 	port       string
 	auth       authHandlerPort
@@ -55,6 +59,7 @@ type ServerAdapter struct {
 	location   LocationHandlerPort
 	user       UserHandlerPort
 	attendee   AttendeeHandlerPort
+	organiser  OrganiserHandlerPort
 }
 
 func New(
@@ -67,6 +72,7 @@ func New(
 	location LocationHandlerPort,
 	user UserHandlerPort,
 	attendee AttendeeHandlerPort,
+	organiser OrganiserHandlerPort,
 
 ) *ServerAdapter {
 	return &ServerAdapter{
@@ -79,6 +85,7 @@ func New(
 		location:   location,
 		user:       user,
 		attendee:   attendee,
+		organiser:  organiser,
 	}
 }
 
@@ -115,6 +122,7 @@ func (s *ServerAdapter) StartServer() {
 	app.Route("/api/v1/location", s.LocationRouter)
 	app.Route("/api/v1/user", s.UserRouter)
 	app.Route("/api/v1/attendee", s.AttendeeRouter)
+	app.Route("/api/v1/organiser", s.OrganiserRouter)
 
 	app.Listen(":" + s.port)
 
