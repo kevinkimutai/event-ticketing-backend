@@ -47,6 +47,7 @@ type AttendeeHandlerPort interface {
 
 type OrganiserHandlerPort interface {
 	GetOrganiserByUserID(c *fiber.Ctx) error
+	GetOrganiserEvent(c *fiber.Ctx) error
 }
 
 type ServerAdapter struct {

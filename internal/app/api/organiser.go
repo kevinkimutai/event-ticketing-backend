@@ -6,6 +6,7 @@ import (
 
 type OrganiserRepoPort interface {
 	GetOrganisersByUserID(userID int64) (domain.OrganisersFetch, error)
+	GetOrganiserEvent(eventID int64) (domain.OrganiserEventFetch, error)
 }
 
 type OrganiserRepo struct {
@@ -22,4 +23,10 @@ func (r *OrganiserRepo) GetOrganisersByUserID(userID int64) (domain.OrganisersFe
 	org, err := r.db.GetOrganisersByUserID(userID)
 
 	return org, err
+}
+
+func (r *OrganiserRepo) GetOrganiserEvent(eventID int64) (domain.OrganiserEventFetch, error) {
+	event, err := r.db.GetOrganiserEvent(eventID)
+
+	return event, err
 }

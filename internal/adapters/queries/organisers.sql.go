@@ -7,6 +7,8 @@ package queries
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createOrganiser = `-- name: CreateOrganiser :one
@@ -88,4 +90,120 @@ func (q *Queries) GetOrganisersByUserID(ctx context.Context, userID int64) ([]Or
 		return nil, err
 	}
 	return items, nil
+}
+
+const getOrganisersEventByID = `-- name: GetOrganisersEventByID :many
+SELECT 
+  att.attendee_id AS attendee_id,
+	u.full_name AS fullname,
+	u.email AS email,
+	ttypes.name AS ticket_type_name,
+	oitems.quantity AS quantity,
+	oitems.total_price AS total
+	
+FROM 
+    tickets t
+JOIN 
+    ticket_types ttypes ON t.ticket_type_id = ttypes.ticket_type_id
+JOIN 
+    ticket_order_items oitems ON oitems.ticket_id = t.ticket_id
+JOIN 
+	ticket_orders ord ON ord.order_id = oitems.order_id
+JOIN 
+	attendees att ON att.attendee_id = ord.attendee_id
+JOIN 
+	users u ON u.user_id = att.user_id
+
+WHERE 
+    ttypes.event_id = $1
+`
+
+type GetOrganisersEventByIDRow struct {
+	AttendeeID     int64
+	Fullname       string
+	Email          string
+	TicketTypeName pgtype.Text
+	Quantity       int64
+	Total          pgtype.Numeric
+}
+
+func (q *Queries) GetOrganisersEventByID(ctx context.Context, eventID int64) ([]GetOrganisersEventByIDRow, error) {
+	rows, err := q.db.Query(ctx, getOrganisersEventByID, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetOrganisersEventByIDRow
+	for rows.Next() {
+		var i GetOrganisersEventByIDRow
+		if err := rows.Scan(
+			&i.AttendeeID,
+			&i.Fullname,
+			&i.Email,
+			&i.TicketTypeName,
+			&i.Quantity,
+			&i.Total,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getOrganisersEventCount = `-- name: GetOrganisersEventCount :one
+SELECT 
+ COUNT(*)
+	
+FROM 
+    tickets t
+JOIN 
+    ticket_types ttypes ON t.ticket_type_id = ttypes.ticket_type_id
+JOIN 
+    ticket_order_items oitems ON oitems.ticket_id = t.ticket_id
+JOIN 
+	ticket_orders ord ON ord.order_id = oitems.order_id
+JOIN 
+	attendees att ON att.attendee_id = ord.attendee_id
+JOIN 
+	users u ON u.user_id = att.user_id
+
+WHERE 
+    ttypes.event_id = $1
+`
+
+func (q *Queries) GetOrganisersEventCount(ctx context.Context, eventID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, getOrganisersEventCount, eventID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const getOrganisersEventSums = `-- name: GetOrganisersEventSums :one
+SELECT 
+    COALESCE(SUM(oitems.quantity), 0) AS total_sold_tickets,
+    COALESCE(SUM(oitems.total_price), 0) AS total_price
+FROM 
+    tickets t
+JOIN 
+    ticket_types ttypes ON t.ticket_type_id = ttypes.ticket_type_id
+JOIN 
+    ticket_order_items oitems ON oitems.ticket_id = t.ticket_id
+WHERE 
+    ttypes.event_id = $1
+`
+
+type GetOrganisersEventSumsRow struct {
+	TotalSoldTickets interface{}
+	TotalPrice       interface{}
+}
+
+func (q *Queries) GetOrganisersEventSums(ctx context.Context, eventID int64) (GetOrganisersEventSumsRow, error) {
+	row := q.db.QueryRow(ctx, getOrganisersEventSums, eventID)
+	var i GetOrganisersEventSumsRow
+	err := row.Scan(&i.TotalSoldTickets, &i.TotalPrice)
+	return i, err
 }
