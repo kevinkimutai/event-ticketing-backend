@@ -4,6 +4,10 @@ import (
 	"time"
 )
 
+type OrganiserData struct {
+	TotalAmountEvents float64     `json:"total_amount_events"`
+	Data              []Organiser `json:"data"`
+}
 type Organiser struct {
 	OrganiserID int64     `json:"organiser_id"`
 	UserID      int64     `json:"user_id"`
@@ -12,20 +16,19 @@ type Organiser struct {
 }
 
 type OrganisersFetch struct {
-	Page          uint        `json:"page"`
-	NumberOfPages uint        `json:"number_of_pages"`
-	Total         int64       `json:"total"`
-	Data          []Organiser `json:"data"`
+	Page          uint          `json:"page"`
+	NumberOfPages uint          `json:"number_of_pages"`
+	Total         int64         `json:"total"`
+	Data          OrganiserData `json:"data"`
 }
 
 type OrganisersResponse struct {
-	StatusCode    uint        `json:"status_code"`
-	Message       string      `json:"message"`
-	Page          uint        `json:"page"`
-	NumberOfPages uint        `json:"number_of_pages"`
-	Total         int64       `json:"total"`
-	TotalAmount   float64     `json:"total_amount"`
-	Data          []Organiser `json:"data"`
+	StatusCode    uint          `json:"status_code"`
+	Message       string        `json:"message"`
+	Page          uint          `json:"page"`
+	NumberOfPages uint          `json:"number_of_pages"`
+	Total         int64         `json:"total"`
+	Data          OrganiserData `json:"data"`
 }
 
 type OrganiserEvent struct {

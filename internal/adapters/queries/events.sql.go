@@ -105,12 +105,22 @@ func (q *Queries) GetEvent(ctx context.Context, eventID int64) (Event, error) {
 }
 
 const getTotalEventsCount = `-- name: GetTotalEventsCount :one
-SELECT COUNT(*) FROM events
-  WHERE date > NOW() OR (date = NOW()::DATE AND to_time > NOW())
+SELECT COUNT(*)
+FROM events
+WHERE (date > NOW() OR (date = NOW()::DATE AND to_time > NOW()))
+  AND (name ILIKE '%' || $3 || '%' OR $3 IS NULL)
+  AND (category_id = $1 OR $1 IS NULL)
+  AND (location_id = $2 OR $2 IS NULL)
 `
 
-func (q *Queries) GetTotalEventsCount(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getTotalEventsCount)
+type GetTotalEventsCountParams struct {
+	CategoryID sql.NullInt64
+	LocationID sql.NullInt64
+	Column3    sql.NullString
+}
+
+func (q *Queries) GetTotalEventsCount(ctx context.Context, arg GetTotalEventsCountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getTotalEventsCount, arg.CategoryID, arg.LocationID, arg.Column3)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -165,6 +175,7 @@ const listUpcomingEvents = `-- name: ListUpcomingEvents :many
 SELECT event_id, name, category_id, date, from_time, to_time, location, description, created_at, longitude, latitude, poster_url, location_id 
 FROM events
 WHERE (date > NOW() OR (date = NOW() AND to_time > NOW()))
+  AND (name ILIKE '%' || $5 || '%' OR $5 IS NULL)
   AND (category_id = $3 OR $3 IS NULL)
   AND (location_id = $4 OR $4 IS NULL)
 ORDER BY date, to_time
@@ -176,6 +187,7 @@ type ListUpcomingEventsParams struct {
 	Offset     int32
 	CategoryID sql.NullInt64
 	LocationID sql.NullInt64
+	Column5    sql.NullString
 }
 
 func (q *Queries) ListUpcomingEvents(ctx context.Context, arg ListUpcomingEventsParams) ([]Event, error) {
@@ -184,6 +196,7 @@ func (q *Queries) ListUpcomingEvents(ctx context.Context, arg ListUpcomingEvents
 		arg.Offset,
 		arg.CategoryID,
 		arg.LocationID,
+		arg.Column5,
 	)
 	if err != nil {
 		return nil, err

@@ -84,3 +84,102 @@ func (q *Queries) GetAttendeeByUserID(ctx context.Context, attendeeID int64) (Ge
 	)
 	return i, err
 }
+
+const getAttendeeEvents = `-- name: GetAttendeeEvents :many
+SELECT 
+	att.attendee_id AS attendee_id,
+	e.name AS event_name,
+	e.date AS event_date,
+	ord.payment_id AS payment_id,
+	oitems.quantity AS quantity,
+	oitems.total_price AS total_amount
+	
+    
+FROM 
+    tickets t
+JOIN 
+    ticket_types ttypes ON t.ticket_type_id = ttypes.ticket_type_id
+JOIN 
+    ticket_order_items oitems ON oitems.ticket_id = t.ticket_id
+JOIN 
+    events e ON e.event_id = ttypes.event_id
+JOIN 
+    ticket_orders ord ON ord.order_id = oitems.order_id
+JOIN 
+    attendees att ON att.attendee_id = ord.attendee_id
+JOIN 
+    users u ON u.user_id = att.user_id
+WHERE 
+    att.user_id = $1
+`
+
+type GetAttendeeEventsRow struct {
+	AttendeeID  int64
+	EventName   string
+	EventDate   pgtype.Timestamptz
+	PaymentID   pgtype.Int8
+	Quantity    int64
+	TotalAmount pgtype.Numeric
+}
+
+func (q *Queries) GetAttendeeEvents(ctx context.Context, userID int64) ([]GetAttendeeEventsRow, error) {
+	rows, err := q.db.Query(ctx, getAttendeeEvents, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAttendeeEventsRow
+	for rows.Next() {
+		var i GetAttendeeEventsRow
+		if err := rows.Scan(
+			&i.AttendeeID,
+			&i.EventName,
+			&i.EventDate,
+			&i.PaymentID,
+			&i.Quantity,
+			&i.TotalAmount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getEventsAttended = `-- name: GetEventsAttended :one
+SELECT 
+	COUNT(DISTINCT(e.event_id)) AS events_attended,
+    SUM(oitems.total_price) AS total_spent
+    
+FROM 
+    tickets t
+JOIN 
+    ticket_types ttypes ON t.ticket_type_id = ttypes.ticket_type_id
+JOIN 
+    ticket_order_items oitems ON oitems.ticket_id = t.ticket_id
+JOIN 
+    events e ON e.event_id = ttypes.event_id
+JOIN 
+    ticket_orders ord ON ord.order_id = oitems.order_id
+JOIN 
+    attendees att ON att.attendee_id = ord.attendee_id
+JOIN 
+    users u ON u.user_id = att.user_id
+WHERE 
+    att.user_id = $1
+`
+
+type GetEventsAttendedRow struct {
+	EventsAttended int64
+	TotalSpent     int64
+}
+
+func (q *Queries) GetEventsAttended(ctx context.Context, userID int64) (GetEventsAttendedRow, error) {
+	row := q.db.QueryRow(ctx, getEventsAttended, userID)
+	var i GetEventsAttendedRow
+	err := row.Scan(&i.EventsAttended, &i.TotalSpent)
+	return i, err
+}

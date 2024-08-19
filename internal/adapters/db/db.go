@@ -27,3 +27,5 @@ func NewDB(DBUrl string) *DBAdapter {
 	return &DBAdapter{conn: conn, queries: queries}
 
 }
+
+

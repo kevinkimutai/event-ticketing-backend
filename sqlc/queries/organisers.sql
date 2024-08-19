@@ -11,10 +11,6 @@ RETURNING *;
 SELECT * FROM organisers 
 WHERE user_id = $1;
 
--- name: GetOrganisersByUserID :many
-SELECT SUM(* FROM organisers 
-WHERE user_id = $1;
-
 -- name: GetCountOrganisersByUserID :many
 SELECT COUNT(*) FROM organisers
 WHERE user_id = $1;
@@ -43,6 +39,21 @@ JOIN
 
 WHERE 
     ttypes.event_id = $1;
+
+
+-- name: SumAmountEvents :one
+SELECT 
+    SUM(oitems.total_price) AS total_amount
+FROM 
+    tickets t
+INNER JOIN 
+    ticket_types ttypes ON t.ticket_type_id = ttypes.ticket_type_id
+INNER JOIN 
+    ticket_order_items oitems ON oitems.ticket_id = t.ticket_id
+INNER JOIN 
+    organisers org ON org.event_id = ttypes.event_id
+WHERE 
+    org.user_id = $1;
 
 
 -- name: GetOrganisersEventSums :one
@@ -78,3 +89,5 @@ JOIN
 
 WHERE 
     ttypes.event_id = $1;
+
+

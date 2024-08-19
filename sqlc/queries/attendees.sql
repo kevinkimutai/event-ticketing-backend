@@ -18,3 +18,57 @@ LIMIT 1;
 SELECT * FROM attendees
 WHERE attendee_id =$1
 LIMIT 1;
+
+-- name: GetAttendeeEvents :many
+SELECT 
+	att.attendee_id AS attendee_id,
+	e.name AS event_name,
+	e.date AS event_date,
+	ord.payment_id AS payment_id,
+	oitems.quantity AS quantity,
+	oitems.total_price AS total_amount
+	
+    
+FROM 
+    tickets t
+JOIN 
+    ticket_types ttypes ON t.ticket_type_id = ttypes.ticket_type_id
+JOIN 
+    ticket_order_items oitems ON oitems.ticket_id = t.ticket_id
+JOIN 
+    events e ON e.event_id = ttypes.event_id
+JOIN 
+    ticket_orders ord ON ord.order_id = oitems.order_id
+JOIN 
+    attendees att ON att.attendee_id = ord.attendee_id
+JOIN 
+    users u ON u.user_id = att.user_id
+WHERE 
+    att.user_id = $1;
+
+
+
+-- name: GetEventsAttended :one
+SELECT 
+	COUNT(DISTINCT(e.event_id)) AS events_attended,
+    SUM(oitems.total_price) AS total_spent
+    
+FROM 
+    tickets t
+JOIN 
+    ticket_types ttypes ON t.ticket_type_id = ttypes.ticket_type_id
+JOIN 
+    ticket_order_items oitems ON oitems.ticket_id = t.ticket_id
+JOIN 
+    events e ON e.event_id = ttypes.event_id
+JOIN 
+    ticket_orders ord ON ord.order_id = oitems.order_id
+JOIN 
+    attendees att ON att.attendee_id = ord.attendee_id
+JOIN 
+    users u ON u.user_id = att.user_id
+WHERE 
+    att.user_id = $1;
+
+
+

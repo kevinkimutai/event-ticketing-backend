@@ -11,6 +11,7 @@ LIMIT $1 OFFSET $2;
 SELECT * 
 FROM events
 WHERE (date > NOW() OR (date = NOW() AND to_time > NOW()))
+  AND (name ILIKE '%' || $5 || '%' OR $5 IS NULL)
   AND (category_id = $3 OR $3 IS NULL)
   AND (location_id = $4 OR $4 IS NULL)
 ORDER BY date, to_time
@@ -18,8 +19,12 @@ LIMIT $1 OFFSET $2;
 
 
 -- name: GetTotalEventsCount :one
-SELECT COUNT(*) FROM events
-  WHERE date > NOW() OR (date = NOW()::DATE AND to_time > NOW());
+SELECT COUNT(*)
+FROM events
+WHERE (date > NOW() OR (date = NOW()::DATE AND to_time > NOW()))
+  AND (name ILIKE '%' || $3 || '%' OR $3 IS NULL)
+  AND (category_id = $1 OR $1 IS NULL)
+  AND (location_id = $2 OR $2 IS NULL);
 
 -- name: CreateEvent :one
 INSERT INTO events (

@@ -43,6 +43,7 @@ type UserHandlerPort interface {
 }
 type AttendeeHandlerPort interface {
 	GetAttendee(c *fiber.Ctx) error
+	GetAttendeeEvents(c *fiber.Ctx) error
 }
 
 type OrganiserHandlerPort interface {
@@ -106,7 +107,7 @@ func (s *ServerAdapter) StartServer() {
 
 	// Cors
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:3000",
+		AllowOrigins: "http://localhost:3000,https://www.ticketpass.site",
 		AllowMethods: "GET,POST,PUT,DELETE",
 		AllowHeaders: "Origin, Content-Type, Authorization, Accept",
 	}))

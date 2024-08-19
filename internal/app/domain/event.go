@@ -2,7 +2,6 @@ package domain
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -76,6 +75,7 @@ type Params struct {
 	Limit      int32
 	CategoryID int64
 	LocationID int64
+	SearchTerm string
 }
 
 //Check Missing Data
@@ -119,7 +119,7 @@ func NewEventDomain(e *Event) error {
 }
 
 func CheckEventParams(m map[string]string) *Params {
-	var LIMIT, OFFSET int32 = 10, 0
+	var LIMIT, OFFSET int32 = 20, 0
 	var Location_ID, Category_ID int64
 
 	if m["limit"] != "" {
@@ -147,13 +147,11 @@ func CheckEventParams(m map[string]string) *Params {
 		Category_ID = catID
 	}
 
-	fmt.Println("LOcation", Location_ID)
-	fmt.Println("Category", Category_ID)
-
 	return &Params{
 		Page:       OFFSET,
 		Limit:      LIMIT,
 		CategoryID: Category_ID,
 		LocationID: Location_ID,
+		SearchTerm: m["search"],
 	}
 }

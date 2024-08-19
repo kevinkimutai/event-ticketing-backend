@@ -22,6 +22,12 @@ func (db *DBAdapter) GetOrganisersByUserID(userID int64) (domain.OrganisersFetch
 		return domain.OrganisersFetch{}, err
 	}
 
+	//Get Total amount made
+	tAmount, err := db.queries.SumAmountEvents(ctx, userID)
+	if err != nil {
+		return domain.OrganisersFetch{}, err
+	}
+
 	var orgs []domain.Organiser
 
 	for _, v := range organisers {
@@ -41,7 +47,10 @@ func (db *DBAdapter) GetOrganisersByUserID(userID int64) (domain.OrganisersFetch
 		Page:          0,
 		NumberOfPages: 0,
 		Total:         count[0],
-		Data:          orgs,
+		Data: domain.OrganiserData{
+			TotalAmountEvents: float64(tAmount),
+			Data:              orgs,
+		},
 	}, nil
 }
 

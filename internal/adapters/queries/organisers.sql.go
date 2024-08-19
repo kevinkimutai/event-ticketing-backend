@@ -207,3 +207,25 @@ func (q *Queries) GetOrganisersEventSums(ctx context.Context, eventID int64) (Ge
 	err := row.Scan(&i.TotalSoldTickets, &i.TotalPrice)
 	return i, err
 }
+
+const sumAmountEvents = `-- name: SumAmountEvents :one
+SELECT 
+    SUM(oitems.total_price) AS total_amount
+FROM 
+    tickets t
+INNER JOIN 
+    ticket_types ttypes ON t.ticket_type_id = ttypes.ticket_type_id
+INNER JOIN 
+    ticket_order_items oitems ON oitems.ticket_id = t.ticket_id
+INNER JOIN 
+    organisers org ON org.event_id = ttypes.event_id
+WHERE 
+    org.user_id = $1
+`
+
+func (q *Queries) SumAmountEvents(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, sumAmountEvents, userID)
+	var total_amount int64
+	err := row.Scan(&total_amount)
+	return total_amount, err
+}

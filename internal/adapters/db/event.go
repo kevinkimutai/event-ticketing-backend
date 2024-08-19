@@ -87,6 +87,9 @@ func (db *DBAdapter) GetEvents(params *domain.Params) (domain.EventsFetch, error
 	if params.LocationID != 0 {
 		eParams.LocationID = sql.NullInt64{Int64: params.LocationID, Valid: true}
 	}
+	if params.SearchTerm != "" {
+		eParams.Column5 = sql.NullString{String: params.SearchTerm, Valid: true}
+	}
 
 	// fmt.Println(eParams.CategoryID, eParams.LocationID)
 	//Get Products
@@ -97,7 +100,12 @@ func (db *DBAdapter) GetEvents(params *domain.Params) (domain.EventsFetch, error
 	}
 
 	//Get Count
-	count, err := db.queries.GetTotalEventsCount(ctx)
+	count, err := db.queries.GetTotalEventsCount(ctx, queries.GetTotalEventsCountParams{
+		CategoryID: eParams.CategoryID,
+		LocationID: eParams.LocationID,
+		Column3:    eParams.Column5,
+	})
+
 	if err != nil {
 		return domain.EventsFetch{}, err
 
