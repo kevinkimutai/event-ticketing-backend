@@ -35,6 +35,17 @@ type OrderItem struct {
 	TotalPrice float64
 }
 
+type TicketOrderDetails struct {
+	OrderID        int64     `json:"order_id"`
+	FullName       string    `json:"full_name"`
+	Quantity       int64     `json:"quantity"`
+	TicketTypeName string    `json:"ticket_type_name"`
+	EventName      string    `json:"event_name"`
+	EventDate      time.Time `json:"event_date"`
+	EventLocation  string    `json:"event_location"`
+	Admitted       bool      `json:"admitted"`
+}
+
 type TicketOrderResponse struct {
 	StatusCode uint        `json:"status_code"`
 	Message    string      `json:"message"`
@@ -59,4 +70,10 @@ type TicketResponse struct {
 }
 type TicketOrderRequest struct {
 	OrderItems []TicketOrderItem `json:"order_items"`
+}
+
+type TicketOrderDetailsResponse struct {
+	StatusCode uint               `json:"status_code"`
+	Message    string             `json:"message"`
+	Data       TicketOrderDetails `json:"data"`
 }

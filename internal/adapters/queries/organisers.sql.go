@@ -37,38 +37,104 @@ func (q *Queries) CreateOrganiser(ctx context.Context, arg CreateOrganiserParams
 	return i, err
 }
 
-const getCountOrganisersByUserID = `-- name: GetCountOrganisersByUserID :many
+const getCountAdmittedOrganisersEventByID = `-- name: GetCountAdmittedOrganisersEventByID :one
+SELECT 
+  COUNT(*)	
+FROM 
+    tickets t
+JOIN 
+    ticket_types ttypes ON t.ticket_type_id = ttypes.ticket_type_id
+JOIN 
+    ticket_order_items oitems ON oitems.ticket_id = t.ticket_id
+JOIN 
+	ticket_orders ord ON ord.order_id = oitems.order_id
+JOIN 
+	attendees att ON att.attendee_id = ord.attendee_id
+JOIN 
+	users u ON u.user_id = att.user_id
+
+WHERE 
+    ttypes.event_id = $1 AND ord.admit_status=true
+`
+
+func (q *Queries) GetCountAdmittedOrganisersEventByID(ctx context.Context, eventID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, getCountAdmittedOrganisersEventByID, eventID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const getCountNotAdmittedOrganisersEventByID = `-- name: GetCountNotAdmittedOrganisersEventByID :one
+SELECT 
+  COUNT(*)	
+FROM 
+    tickets t
+JOIN 
+    ticket_types ttypes ON t.ticket_type_id = ttypes.ticket_type_id
+JOIN 
+    ticket_order_items oitems ON oitems.ticket_id = t.ticket_id
+JOIN 
+	ticket_orders ord ON ord.order_id = oitems.order_id
+JOIN 
+	attendees att ON att.attendee_id = ord.attendee_id
+JOIN 
+	users u ON u.user_id = att.user_id
+
+WHERE 
+    ttypes.event_id = $1 AND ord.admit_status=false
+`
+
+func (q *Queries) GetCountNotAdmittedOrganisersEventByID(ctx context.Context, eventID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, getCountNotAdmittedOrganisersEventByID, eventID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const getCountOrganisersByUserID = `-- name: GetCountOrganisersByUserID :one
 SELECT COUNT(*) FROM organisers
 WHERE user_id = $1
 `
 
-func (q *Queries) GetCountOrganisersByUserID(ctx context.Context, userID int64) ([]int64, error) {
-	rows, err := q.db.Query(ctx, getCountOrganisersByUserID, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []int64
-	for rows.Next() {
-		var count int64
-		if err := rows.Scan(&count); err != nil {
-			return nil, err
-		}
-		items = append(items, count)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetCountOrganisersByUserID(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, getCountOrganisersByUserID, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const getOrganiserByEventID = `-- name: GetOrganiserByEventID :one
+SELECT organiser_id, user_id, event_id, created_at FROM organisers
+WHERE event_id = $1
+`
+
+func (q *Queries) GetOrganiserByEventID(ctx context.Context, eventID int64) (Organiser, error) {
+	row := q.db.QueryRow(ctx, getOrganiserByEventID, eventID)
+	var i Organiser
+	err := row.Scan(
+		&i.OrganiserID,
+		&i.UserID,
+		&i.EventID,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const getOrganisersByUserID = `-- name: GetOrganisersByUserID :many
 SELECT organiser_id, user_id, event_id, created_at FROM organisers 
 WHERE user_id = $1
+ORDER BY organiser_id DESC
+LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) GetOrganisersByUserID(ctx context.Context, userID int64) ([]Organiser, error) {
-	rows, err := q.db.Query(ctx, getOrganisersByUserID, userID)
+type GetOrganisersByUserIDParams struct {
+	UserID int64
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetOrganisersByUserID(ctx context.Context, arg GetOrganisersByUserIDParams) ([]Organiser, error) {
+	rows, err := q.db.Query(ctx, getOrganisersByUserID, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +165,8 @@ SELECT
 	u.email AS email,
 	ttypes.name AS ticket_type_name,
 	oitems.quantity AS quantity,
-	oitems.total_price AS total
+	oitems.total_price AS total,
+    ord.admit_status AS admitted
 	
 FROM 
     tickets t
@@ -125,6 +192,7 @@ type GetOrganisersEventByIDRow struct {
 	TicketTypeName pgtype.Text
 	Quantity       int64
 	Total          pgtype.Numeric
+	Admitted       pgtype.Bool
 }
 
 func (q *Queries) GetOrganisersEventByID(ctx context.Context, eventID int64) ([]GetOrganisersEventByIDRow, error) {
@@ -143,6 +211,7 @@ func (q *Queries) GetOrganisersEventByID(ctx context.Context, eventID int64) ([]
 			&i.TicketTypeName,
 			&i.Quantity,
 			&i.Total,
+			&i.Admitted,
 		); err != nil {
 			return nil, err
 		}

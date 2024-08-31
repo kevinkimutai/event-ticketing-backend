@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"fmt"
 	"strconv"
 
@@ -10,8 +11,9 @@ import (
 )
 
 type OrganiserApiPort interface {
-	GetOrganisersByUserID(userID int64) (domain.OrganisersFetch, error)
-	GetOrganiserEvent(eventID int64) (domain.OrganiserEventFetch, error)
+	GetOrganisersByUserID(userID int64, params *domain.OrganiserParams) (domain.OrganisersFetch, error)
+	GetOrganiserEvent(eventID int64, params *domain.OrganiserParams) (domain.OrganiserEventFetch, error)
+	DownloadOrganiserEvent(eventID int64) ([]byte, error)
 }
 
 type OrganiserService struct {
@@ -35,7 +37,13 @@ func (s *OrganiserService) GetOrganiserByUserID(c *fiber.Ctx) error {
 
 	}
 
-	organisers, err := s.api.GetOrganisersByUserID(user.UserID)
+	//Get Query Params
+	m := c.Queries()
+
+	//Bind To ProductParams
+	params := domain.CheckOrganiserParams(m)
+
+	organisers, err := s.api.GetOrganisersByUserID(user.UserID, params)
 	if err != nil {
 		return c.Status(500).JSON(
 			domain.ErrorResponse{
@@ -67,8 +75,14 @@ func (s *OrganiserService) GetOrganiserEvent(c *fiber.Ctx) error {
 			})
 	}
 
+	//Get Query Params
+	m := c.Queries()
+
+	//Bind To ProductParams
+	params := domain.CheckOrganiserParams(m)
+
 	//Get Product API
-	event, err := s.api.GetOrganiserEvent(eventIDInt64)
+	event, err := s.api.GetOrganiserEvent(eventIDInt64, params)
 	if err != nil {
 		return c.Status(500).JSON(
 			domain.ErrorResponse{
@@ -83,8 +97,44 @@ func (s *OrganiserService) GetOrganiserEvent(c *fiber.Ctx) error {
 		Page:          event.Page,
 		NumberOfPages: event.NumberOfPages,
 		Total:         event.Total,
-		TicketsSold:   event.TicketsSold,
-		TotalAmount:   event.TotalAmount,
-		Data:          event.Data,
+		Data: domain.OrganiserEventDetails{
+			TicketsSold:        event.TicketsSold,
+			TotalAmount:        event.TotalAmount,
+			TicketsNotAdmitted: event.TicketsNotAdmitted,
+			TicketsAdmitted:    event.TicketsAdmitted,
+			Data:               event.Data,
+		},
 	})
+}
+
+func (s *OrganiserService) DownloadOrganiserEvent(c *fiber.Ctx) error {
+	eventID := c.Params("eventID")
+
+	//convert To int64
+	eventIDInt64, err := strconv.ParseInt(eventID, 10, 32)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+	}
+
+	//Get Product API
+	pdfData, err := s.api.DownloadOrganiserEvent(eventIDInt64)
+	if err != nil {
+		return c.Status(500).JSON(
+			domain.ErrorResponse{
+				StatusCode: 500,
+				Message:    err.Error(),
+			})
+	}
+
+	// Set the appropriate headers
+	c.Response().Header.Set("Content-Type", "application/pdf")
+	c.Response().Header.Set("Content-Disposition", "attachment; filename=attendees.pdf")
+	c.Response().Header.Set("Content-Length", strconv.Itoa(len(pdfData)))
+
+	// Send the PDF as a file download
+	return c.SendStream(bytes.NewReader(pdfData))
 }

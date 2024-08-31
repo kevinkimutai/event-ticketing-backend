@@ -34,20 +34,20 @@ INSERT INTO events (
 )
 RETURNING *;
 
--- name: UpdateEvent :exec
-UPDATE events 
-  set name = $2,
-  date = $3,
-  from_time = $4,
-  to_time = $5,
-  location = $6,
-  description = $7,
-  longitude = $8,
-  latitude = $9,
-  poster_url =$10,
-  location_id = $11
-WHERE event_id = $1;
+
 
 -- name: DeleteCompany :exec
 DELETE FROM events
 WHERE event_id = $1;
+
+-- name: UpdateEvent :exec
+UPDATE events
+SET name =$2,
+date = $3,
+category_id =$4,
+location = $5,
+description = $6,
+location_id = $7,
+longitude =$8,
+latitude =$9
+WHERE event_id =$1;

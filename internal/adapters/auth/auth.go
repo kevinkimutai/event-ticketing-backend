@@ -218,7 +218,7 @@ func (a *Authenticator) AllowedRoles(allowedrole string) func(*fiber.Ctx) error 
 			rolesStrings[i] = v.(string)
 		}
 
-		fmt.Println(rolesStrings)
+		fmt.Println("ROLES", rolesStrings)
 
 		// Check if the user's role is in the allowedRoles slice.
 		allowed := false

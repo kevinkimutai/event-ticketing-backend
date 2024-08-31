@@ -175,3 +175,31 @@ func (db *DBAdapter) GetTicketOrder(orderId int64) (domain.TicketOrder, error) {
 		TotalAmount: utils.ConvertNumericToFloat64(tOrder.TotalAmount),
 	}, err
 }
+
+func (db *DBAdapter) GetTicketOrderDetails(orderID int64) (domain.TicketOrderDetails, error) {
+	ctx := context.Background()
+
+	tOrder, err := db.queries.GetTicketOrderDetails(ctx, orderID)
+
+	return domain.TicketOrderDetails{
+		OrderID:        tOrder.OrderID,
+		FullName:       tOrder.FullName,
+		EventName:      tOrder.EventName,
+		Quantity:       tOrder.Quantity,
+		TicketTypeName: tOrder.TicketTypeName.String,
+		EventDate:      tOrder.EventDate.Time,
+		EventLocation:  tOrder.EventLocation,
+		Admitted:       tOrder.Admitted.Bool,
+	}, err
+}
+
+func (db *DBAdapter) AdmitTicketOrder(orderId int64) error {
+	ctx := context.Background()
+
+	err := db.queries.UpdateAdmitTicketOrder(ctx, orderId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

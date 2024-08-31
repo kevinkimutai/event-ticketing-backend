@@ -2,17 +2,22 @@ package db
 
 import (
 	"context"
-	"fmt"
+	"math"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/kevinkimutai/ticketingapp/internal/adapters/queries"
 	"github.com/kevinkimutai/ticketingapp/internal/app/domain"
 	"github.com/kevinkimutai/ticketingapp/internal/utils"
 )
 
-func (db *DBAdapter) GetOrganisersByUserID(userID int64) (domain.OrganisersFetch, error) {
+func (db *DBAdapter) GetOrganisersByUserID(userID int64, params *domain.OrganiserParams) (domain.OrganisersFetch, error) {
 	ctx := context.Background()
 
-	organisers, err := db.queries.GetOrganisersByUserID(ctx, userID)
+	organisers, err := db.queries.GetOrganisersByUserID(ctx, queries.GetOrganisersByUserIDParams{
+		UserID: userID,
+		Limit:  params.Limit,
+		Offset: params.Page,
+	})
 	if err != nil {
 		return domain.OrganisersFetch{}, err
 	}
@@ -27,6 +32,9 @@ func (db *DBAdapter) GetOrganisersByUserID(userID int64) (domain.OrganisersFetch
 	if err != nil {
 		return domain.OrganisersFetch{}, err
 	}
+
+	//Get Page
+	page := getPage(params.Page, params.Limit)
 
 	var orgs []domain.Organiser
 
@@ -44,9 +52,9 @@ func (db *DBAdapter) GetOrganisersByUserID(userID int64) (domain.OrganisersFetch
 
 	//TODO:will add pagination
 	return domain.OrganisersFetch{
-		Page:          0,
-		NumberOfPages: 0,
-		Total:         count[0],
+		Page:          page,
+		NumberOfPages: uint(math.Ceil(float64(count) / float64((params.Limit)))),
+		Total:         count,
 		Data: domain.OrganiserData{
 			TotalAmountEvents: float64(tAmount),
 			Data:              orgs,
@@ -54,26 +62,82 @@ func (db *DBAdapter) GetOrganisersByUserID(userID int64) (domain.OrganisersFetch
 	}, nil
 }
 
-func (db *DBAdapter) GetOrganiserEvent(eventID int64) (domain.OrganiserEventFetch, error) {
+func (db *DBAdapter) GetOrganiserEvent(eventID int64, params *domain.OrganiserParams) (domain.OrganiserEventFetch, error) {
 
 	ctx := context.Background()
 
 	organisers, err := db.queries.GetOrganisersEventByID(ctx, eventID)
 	if err != nil {
-		fmt.Println("1")
+
 		return domain.OrganiserEventFetch{}, err
 	}
 
 	count, err := db.queries.GetOrganisersEventCount(ctx, eventID)
 	if err != nil {
-		fmt.Println("2")
+
 		return domain.OrganiserEventFetch{}, err
 	}
 
 	tSums, err := db.queries.GetOrganisersEventSums(ctx, eventID)
 	if err != nil {
-		fmt.Println("3")
+
 		return domain.OrganiserEventFetch{}, err
+	}
+
+	//GetAdmitted
+	admittedCount, err := db.queries.GetCountAdmittedOrganisersEventByID(ctx, eventID)
+	if err != nil {
+
+		return domain.OrganiserEventFetch{}, err
+	}
+
+	//notAdmitted
+	notAdmittedCount, err := db.queries.GetCountNotAdmittedOrganisersEventByID(ctx, eventID)
+	if err != nil {
+
+		return domain.OrganiserEventFetch{}, err
+	}
+
+	//Get Page
+	page := getPage(params.Page, params.Limit)
+
+	var orgs []domain.OrganiserEvent
+
+	for _, v := range organisers {
+		org := domain.OrganiserEvent{
+			AttendeeID:     v.AttendeeID,
+			Fullname:       v.Fullname,
+			Email:          v.Email,
+			TicketTypeName: v.TicketTypeName.String,
+			Quantity:       v.Quantity,
+			Admitted:       v.Admitted.Bool,
+			Total:          utils.ConvertNumericToFloat64(v.Total),
+		}
+
+		orgs = append(orgs, org)
+
+	}
+
+	return domain.OrganiserEventFetch{
+		Page:               page,
+		NumberOfPages:      uint(math.Ceil(float64(count) / float64((params.Limit)))),
+		Total:              count,
+		TicketsSold:        utils.ConvertNumericToFloat64(tSums.TotalSoldTickets.(pgtype.Numeric)),
+		TotalAmount:        utils.ConvertNumericToFloat64(tSums.TotalPrice.(pgtype.Numeric)),
+		TicketsAdmitted:    admittedCount,
+		TicketsNotAdmitted: notAdmittedCount,
+		Data:               orgs,
+	}, nil
+}
+
+func (db *DBAdapter) DownloadOrganiserEvent(eventID int64) ([]domain.OrganiserEvent, error) {
+
+	ctx := context.Background()
+
+	organisers, err := db.queries.GetOrganisersEventByID(ctx, eventID)
+	if err != nil {
+
+		return []domain.OrganiserEvent{}, err
 	}
 
 	var orgs []domain.OrganiserEvent
@@ -92,13 +156,17 @@ func (db *DBAdapter) GetOrganiserEvent(eventID int64) (domain.OrganiserEventFetc
 
 	}
 
-	//TODO:will add pagination
-	return domain.OrganiserEventFetch{
-		Page:          0,
-		NumberOfPages: 0,
-		Total:         count,
-		TicketsSold:   utils.ConvertNumericToFloat64(tSums.TotalSoldTickets.(pgtype.Numeric)),
-		TotalAmount:   utils.ConvertNumericToFloat64(tSums.TotalPrice.(pgtype.Numeric)),
-		Data:          orgs,
-	}, nil
+	return orgs, nil
+}
+
+func (db *DBAdapter) CheckIfUserIsOrganiser(userID int64, eventID int64) (bool, error) {
+	ctx := context.Background()
+
+	org, err := db.queries.GetOrganiserByEventID(ctx, eventID)
+	if err != nil {
+		return false, err
+	}
+
+	return org.UserID == userID, nil
+
 }

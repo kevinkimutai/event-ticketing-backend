@@ -72,6 +72,7 @@ type TicketOrder struct {
 	CreatedAt   pgtype.Timestamptz
 	AttendeeID  pgtype.Int8
 	TotalAmount pgtype.Numeric
+	AdmitStatus pgtype.Bool
 }
 
 type TicketOrderItem struct {

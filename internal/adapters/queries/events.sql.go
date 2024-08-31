@@ -7,8 +7,8 @@ package queries
 
 import (
 	"context"
-	"database/sql"
 
+	"database/sql"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -231,32 +231,28 @@ func (q *Queries) ListUpcomingEvents(ctx context.Context, arg ListUpcomingEvents
 }
 
 const updateEvent = `-- name: UpdateEvent :exec
-UPDATE events 
-  set name = $2,
-  date = $3,
-  from_time = $4,
-  to_time = $5,
-  location = $6,
-  description = $7,
-  longitude = $8,
-  latitude = $9,
-  poster_url =$10,
-  location_id = $11
-WHERE event_id = $1
+UPDATE events
+SET name =$2,
+date = $3,
+category_id =$4,
+location = $5,
+description = $6,
+location_id = $7,
+longitude =$8,
+latitude =$9
+WHERE event_id =$1
 `
 
 type UpdateEventParams struct {
 	EventID     int64
 	Name        string
 	Date        pgtype.Timestamptz
-	FromTime    pgtype.Timestamptz
-	ToTime      pgtype.Timestamptz
+	CategoryID  int64
 	Location    string
 	Description pgtype.Text
+	LocationID  int64
 	Longitude   float64
 	Latitude    float64
-	PosterUrl   string
-	LocationID  int64
 }
 
 func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) error {
@@ -264,14 +260,12 @@ func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) error 
 		arg.EventID,
 		arg.Name,
 		arg.Date,
-		arg.FromTime,
-		arg.ToTime,
+		arg.CategoryID,
 		arg.Location,
 		arg.Description,
+		arg.LocationID,
 		arg.Longitude,
 		arg.Latitude,
-		arg.PosterUrl,
-		arg.LocationID,
 	)
 	return err
 }

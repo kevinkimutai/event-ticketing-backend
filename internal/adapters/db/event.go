@@ -173,3 +173,21 @@ func (db *DBAdapter) GetEventByID(eventID int64) (domain.Event, error) {
 		LocationID:  e.LocationID,
 	}, nil
 }
+
+func (db *DBAdapter) UpdateEvent(event *domain.Event, eventID int64) error {
+	ctx := context.Background()
+
+	err := db.queries.UpdateEvent(ctx, queries.UpdateEventParams{
+		EventID:     eventID,
+		Name:        event.Name,
+		CategoryID:  event.CategoryID,
+		Location:    event.Location,
+		LocationID:  event.LocationID,
+		Description: utils.ConvertStringToText(event.Description),
+		Longitude:   event.Longitude,
+		Latitude:    event.Latitude,
+		Date:        utils.ConvertTimeToTimestamp(event.Date),
+	})
+
+	return err
+}

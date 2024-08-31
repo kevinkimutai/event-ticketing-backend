@@ -11,7 +11,7 @@ import (
 
 type AttendeeApiPort interface {
 	GetAttendeeByID(attendeeID int64) (domain.Attendee, error)
-	GetAttendeeEvents(userID int64) (domain.AttendeeEventFetch, error)
+	GetAttendeeEvents(userID int64, params *domain.OrganiserParams) (domain.AttendeeEventFetch, error)
 }
 
 type AttendeeService struct {
@@ -64,7 +64,13 @@ func (s *AttendeeService) GetAttendeeEvents(c *fiber.Ctx) error {
 
 	}
 
-	events, err := s.api.GetAttendeeEvents(user.UserID)
+	//Get Query Params
+	m := c.Queries()
+
+	//Bind To ProductParams
+	params := domain.CheckOrganiserParams(m)
+
+	events, err := s.api.GetAttendeeEvents(user.UserID, params)
 	if err != nil {
 		return c.Status(500).JSON(
 			domain.ErrorResponse{

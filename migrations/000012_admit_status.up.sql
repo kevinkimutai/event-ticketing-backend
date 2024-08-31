@@ -1,0 +1,2 @@
+ALTER TABLE ticket_orders
+ADD COLUMN admit_status BOOLEAN DEFAULT FALSE;

@@ -17,7 +17,7 @@ INSERT INTO ticket_orders (
 ) VALUES (
   $1
 )
-RETURNING order_id, payment_id, created_at, attendee_id, total_amount
+RETURNING order_id, payment_id, created_at, attendee_id, total_amount, admit_status
 `
 
 func (q *Queries) CreateTicketOrder(ctx context.Context, attendeeID pgtype.Int8) (TicketOrder, error) {
@@ -29,12 +29,13 @@ func (q *Queries) CreateTicketOrder(ctx context.Context, attendeeID pgtype.Int8)
 		&i.CreatedAt,
 		&i.AttendeeID,
 		&i.TotalAmount,
+		&i.AdmitStatus,
 	)
 	return i, err
 }
 
 const getTicketOrder = `-- name: GetTicketOrder :one
-SELECT order_id, payment_id, created_at, attendee_id, total_amount FROM ticket_orders
+SELECT order_id, payment_id, created_at, attendee_id, total_amount, admit_status FROM ticket_orders
 WHERE order_id =$1
 LIMIT 1
 `
@@ -48,12 +49,60 @@ func (q *Queries) GetTicketOrder(ctx context.Context, orderID int64) (TicketOrde
 		&i.CreatedAt,
 		&i.AttendeeID,
 		&i.TotalAmount,
+		&i.AdmitStatus,
+	)
+	return i, err
+}
+
+const getTicketOrderDetails = `-- name: GetTicketOrderDetails :one
+SELECT 
+	tord.order_id AS order_id,
+	u.full_name AS full_name,
+	items.quantity AS quantity,
+	ttypes.name AS ticket_type_name,
+	e.name AS event_name,
+	e.date AS event_date,
+	e.location AS event_location,
+	tord.admit_status AS admitted
+FROM ticket_order_items items
+JOIN tickets t ON t.ticket_id = items.ticket_id
+JOIN ticket_types ttypes ON ttypes.ticket_type_id = t.ticket_type_id
+JOIN events e ON e.event_id = ttypes.event_id
+JOIN ticket_orders tord ON tord.order_id = items.order_id
+JOIN attendees att ON att.attendee_id = tord.attendee_id
+JOIN users u ON u.user_id = att.user_id
+WHERE items.order_id = $1
+`
+
+type GetTicketOrderDetailsRow struct {
+	OrderID        int64
+	FullName       string
+	Quantity       int64
+	TicketTypeName pgtype.Text
+	EventName      string
+	EventDate      pgtype.Timestamptz
+	EventLocation  string
+	Admitted       pgtype.Bool
+}
+
+func (q *Queries) GetTicketOrderDetails(ctx context.Context, orderID int64) (GetTicketOrderDetailsRow, error) {
+	row := q.db.QueryRow(ctx, getTicketOrderDetails, orderID)
+	var i GetTicketOrderDetailsRow
+	err := row.Scan(
+		&i.OrderID,
+		&i.FullName,
+		&i.Quantity,
+		&i.TicketTypeName,
+		&i.EventName,
+		&i.EventDate,
+		&i.EventLocation,
+		&i.Admitted,
 	)
 	return i, err
 }
 
 const getTicketOrders = `-- name: GetTicketOrders :many
-SELECT order_id, payment_id, created_at, attendee_id, total_amount FROM ticket_orders
+SELECT order_id, payment_id, created_at, attendee_id, total_amount, admit_status FROM ticket_orders
 LIMIT $1 OFFSET $2
 `
 
@@ -77,6 +126,7 @@ func (q *Queries) GetTicketOrders(ctx context.Context, arg GetTicketOrdersParams
 			&i.CreatedAt,
 			&i.AttendeeID,
 			&i.TotalAmount,
+			&i.AdmitStatus,
 		); err != nil {
 			return nil, err
 		}
@@ -86,6 +136,17 @@ func (q *Queries) GetTicketOrders(ctx context.Context, arg GetTicketOrdersParams
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateAdmitTicketOrder = `-- name: UpdateAdmitTicketOrder :exec
+UPDATE ticket_orders
+SET admit_status = true
+WHERE order_id=$1
+`
+
+func (q *Queries) UpdateAdmitTicketOrder(ctx context.Context, orderID int64) error {
+	_, err := q.db.Exec(ctx, updateAdmitTicketOrder, orderID)
+	return err
 }
 
 const updateTotalAmountOrder = `-- name: UpdateTotalAmountOrder :exec

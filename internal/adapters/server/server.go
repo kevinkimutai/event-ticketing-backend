@@ -8,13 +8,14 @@ import (
 
 type authHandlerPort interface {
 	IsAuthenticated(*fiber.Ctx) error
-	//AllowedRoles(admin string) func(c *fiber.Ctx) error
+	AllowedRoles(allowedrole string) func(*fiber.Ctx) error
 }
 
 type eventHandlerPort interface {
 	CreateEvent(*fiber.Ctx) error
 	GetEvents(*fiber.Ctx) error
 	GetEvent(*fiber.Ctx) error
+	UpdateEvent(*fiber.Ctx) error
 }
 
 type categoryHandlerPort interface {
@@ -49,6 +50,12 @@ type AttendeeHandlerPort interface {
 type OrganiserHandlerPort interface {
 	GetOrganiserByUserID(c *fiber.Ctx) error
 	GetOrganiserEvent(c *fiber.Ctx) error
+	DownloadOrganiserEvent(c *fiber.Ctx) error
+}
+
+type UsherHandlerPort interface {
+	GetTicketOrderDetails(c *fiber.Ctx) error
+	AdmitTicketOrder(c *fiber.Ctx) error
 }
 
 type ServerAdapter struct {
@@ -62,6 +69,7 @@ type ServerAdapter struct {
 	user       UserHandlerPort
 	attendee   AttendeeHandlerPort
 	organiser  OrganiserHandlerPort
+	usher      UsherHandlerPort
 }
 
 func New(
@@ -75,6 +83,7 @@ func New(
 	user UserHandlerPort,
 	attendee AttendeeHandlerPort,
 	organiser OrganiserHandlerPort,
+	usher UsherHandlerPort,
 
 ) *ServerAdapter {
 	return &ServerAdapter{
@@ -88,6 +97,7 @@ func New(
 		user:       user,
 		attendee:   attendee,
 		organiser:  organiser,
+		usher:      usher,
 	}
 }
 
@@ -108,7 +118,7 @@ func (s *ServerAdapter) StartServer() {
 	// Cors
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "http://localhost:3000,https://www.ticketpass.site",
-		AllowMethods: "GET,POST,PUT,DELETE",
+		AllowMethods: "GET,POST,PUT,DELETE,PATCH",
 		AllowHeaders: "Origin, Content-Type, Authorization, Accept",
 	}))
 
@@ -125,6 +135,7 @@ func (s *ServerAdapter) StartServer() {
 	app.Route("/api/v1/user", s.UserRouter)
 	app.Route("/api/v1/attendee", s.AttendeeRouter)
 	app.Route("/api/v1/organiser", s.OrganiserRouter)
+	app.Route("/api/v1/usher", s.UsherRouter)
 
 	app.Listen(":" + s.port)
 

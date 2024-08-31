@@ -2,7 +2,6 @@ package pdf
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -29,8 +28,19 @@ func NewPDF() *PDFService {
 
 const LOGO_URL = "./public/images/ADMIT.png"
 const COMPANY_NAME = "ticketpass.co"
-const HOST_URL = "http://localhost:8000"
-const URL_ENDPOINT = "/api/v1/order"
+
+var HOST_URL = "http://localhost:3000"
+
+const URL_ENDPOINT = "/dashboard/usher/tickets"
+
+func init() {
+	ENVIRONMENT := os.Getenv("ENVIRONMENT")
+	WEBSITE_URL := os.Getenv("WEBSITE_URL")
+
+	if ENVIRONMENT == "production" {
+		HOST_URL = WEBSITE_URL
+	}
+}
 
 func pdfHeader(pdf *gofpdf.Fpdf) {
 	pdf.SetFont("Arial", "B", 16)
@@ -141,7 +151,7 @@ func pdfQRFooter(pdf *gofpdf.Fpdf, orderID int64) {
 	}
 
 	// Create a temporary file to save the QR code image
-	tmpfile, err := ioutil.TempFile("", "qr_*.png")
+	tmpfile, err := os.CreateTemp("", "qr_*.png")
 	if err != nil {
 		log.Fatalf("Failed to create temp file: %v", err)
 	}
@@ -193,7 +203,7 @@ func (s *PDFService) GenerateTicket(attendee queries.GetAttendeeByUserIDRow, tic
 	pdfQRFooter(pdf, tickets[0].OrderID)
 
 	// Output PDF to file
-	ticketName := fmt.Sprintf("%s-ticket-%d", tickets[0].Name_2, tickets[0].OrderID)
+	ticketName := fmt.Sprintf("%s-ticket-%d", tickets[0].Name_2, utils.GenerateUniqueNumber())
 	// err := pdf.OutputFileAndClose(fmt.Sprintf("%s.pdf", ticketName))
 
 	// if err != nil {

@@ -21,6 +21,7 @@ WORKDIR /
 
 COPY --from=build-stage /app/main /main
 COPY --from=build-stage /app/.env /.env
+COPY --from=build-stage /app/public /public
 
 EXPOSE 8080
 

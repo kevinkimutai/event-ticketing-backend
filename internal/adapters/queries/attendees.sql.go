@@ -93,8 +93,7 @@ SELECT
 	ord.payment_id AS payment_id,
 	oitems.quantity AS quantity,
 	oitems.total_price AS total_amount
-	
-    
+  
 FROM 
     tickets t
 JOIN 
@@ -111,7 +110,15 @@ JOIN
     users u ON u.user_id = att.user_id
 WHERE 
     att.user_id = $1
+ORDER BY att.attendee_id DESC
+LIMIT $2 OFFSET $3
 `
+
+type GetAttendeeEventsParams struct {
+	UserID int64
+	Limit  int32
+	Offset int32
+}
 
 type GetAttendeeEventsRow struct {
 	AttendeeID  int64
@@ -122,8 +129,8 @@ type GetAttendeeEventsRow struct {
 	TotalAmount pgtype.Numeric
 }
 
-func (q *Queries) GetAttendeeEvents(ctx context.Context, userID int64) ([]GetAttendeeEventsRow, error) {
-	rows, err := q.db.Query(ctx, getAttendeeEvents, userID)
+func (q *Queries) GetAttendeeEvents(ctx context.Context, arg GetAttendeeEventsParams) ([]GetAttendeeEventsRow, error) {
+	rows, err := q.db.Query(ctx, getAttendeeEvents, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -147,6 +154,35 @@ func (q *Queries) GetAttendeeEvents(ctx context.Context, userID int64) ([]GetAtt
 		return nil, err
 	}
 	return items, nil
+}
+
+const getCountAttendeeEvents = `-- name: GetCountAttendeeEvents :one
+SELECT 
+	COUNT(*)
+	   
+FROM 
+    tickets t
+JOIN 
+    ticket_types ttypes ON t.ticket_type_id = ttypes.ticket_type_id
+JOIN 
+    ticket_order_items oitems ON oitems.ticket_id = t.ticket_id
+JOIN 
+    events e ON e.event_id = ttypes.event_id
+JOIN 
+    ticket_orders ord ON ord.order_id = oitems.order_id
+JOIN 
+    attendees att ON att.attendee_id = ord.attendee_id
+JOIN 
+    users u ON u.user_id = att.user_id
+WHERE 
+    att.user_id = $1
+`
+
+func (q *Queries) GetCountAttendeeEvents(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, getCountAttendeeEvents, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const getEventsAttended = `-- name: GetEventsAttended :one

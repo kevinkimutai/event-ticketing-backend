@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"math"
 
 	"github.com/kevinkimutai/ticketingapp/internal/adapters/queries"
 	"github.com/kevinkimutai/ticketingapp/internal/app/domain"
@@ -25,10 +26,14 @@ func (db *DBAdapter) GetAttendee(attendeeID int64) (domain.Attendee, error) {
 
 }
 
-func (db *DBAdapter) GetAttendeeEvents(userID int64) (domain.AttendeeEventFetch, error) {
+func (db *DBAdapter) GetAttendeeEvents(userID int64, params *domain.OrganiserParams) (domain.AttendeeEventFetch, error) {
 	ctx := context.Background()
 
-	events, err := db.queries.GetAttendeeEvents(ctx, userID)
+	events, err := db.queries.GetAttendeeEvents(ctx, queries.GetAttendeeEventsParams{
+		UserID: userID,
+		Limit:  params.Limit,
+		Offset: params.Page,
+	})
 	if err != nil {
 		return domain.AttendeeEventFetch{}, err
 	}
@@ -37,6 +42,14 @@ func (db *DBAdapter) GetAttendeeEvents(userID int64) (domain.AttendeeEventFetch,
 	if err != nil {
 		return domain.AttendeeEventFetch{}, err
 	}
+
+	count, err := db.queries.GetCountAttendeeEvents(ctx, userID)
+	if err != nil {
+		return domain.AttendeeEventFetch{}, err
+	}
+
+	//Get Page
+	page := getPage(params.Page, params.Limit)
 
 	var attendeeEvents []domain.AttendeeEvents
 
@@ -56,9 +69,9 @@ func (db *DBAdapter) GetAttendeeEvents(userID int64) (domain.AttendeeEventFetch,
 
 	//TODO:will add pagination
 	return domain.AttendeeEventFetch{
-		Page:          0,
-		NumberOfPages: 0,
-		Total:         0,
+		Page:          page,
+		NumberOfPages: uint(math.Ceil(float64(count) / float64((params.Limit)))),
+		Total:         count,
 		Data: domain.AttendeeData{
 			TotalEvents: eAttended.EventsAttended,
 			TotalSpent:  eAttended.TotalSpent,
